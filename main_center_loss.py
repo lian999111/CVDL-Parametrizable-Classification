@@ -9,7 +9,7 @@ import utils_center_loss
 dataset_name = 'mnist'    # mnist or cifar10
 train_size = 60000
 test_size = 10000
-used_labels = list(range(0, 9))    # the labels to be loaded
+used_labels = list(range(0, 5))    # the labels to be loaded
 num_classes = len(used_labels)
 x_train, y_train, x_test, y_test, class_names = DLCVDatasets.get_dataset(dataset_name,
                                                                          used_labels=used_labels,
@@ -33,7 +33,7 @@ lenet.summary()
 # %% Train the model with center loss
 utils_center_loss.train_model_with_centerloss(lenet, x_train, y_train,
                                               x_test, y_test, num_classes=10, len_encoding=64,
-                                              num_epochs= 3, batch_size=64,
+                                              num_epochs= 10, batch_size=64,
                                               learning_rate=0.005, ratio=0.01)
 
 # %% Evaluate the model
@@ -55,11 +55,11 @@ x_5 = x_test[y_test == 5]
 encoding_5_0 = tf.math.l2_normalize(lenet(x_5[[0],]))
 encoding_5_1 = tf.math.l2_normalize(lenet(x_5[[20],]))
 
-x_6 = x_test[y_test == 6]
+x_6 = x_test[y_test == 8]
 encoding_6_0 = tf.math.l2_normalize(lenet(x_6[[0],]))
 encoding_6_1 = tf.math.l2_normalize(lenet(x_6[[20],]))
 
-x_9 = x_test[y_test == 9]
+x_9 = x_test[y_test == 6]
 encoding_9_0 = tf.math.l2_normalize(lenet(x_9[[0],]))
 encoding_9_1 = tf.math.l2_normalize(lenet(x_9[[20],]))
 
