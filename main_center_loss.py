@@ -30,13 +30,14 @@ input_shape = x_train.shape[1:]
 lenet = lenet_model.get_lenet_model(input_shape=input_shape)
 lenet.summary()
 
-# %%
+# %% Train the model with center loss
 utils_center_loss.train_model_with_centerloss(lenet, x_train, y_train,
                                               x_test, y_test, num_classes=10, len_encoding=64,
                                               num_epochs= 3, batch_size=64,
                                               learning_rate=0.005, ratio=0.01)
 
-# %%
+# %% Evaluate the model
+# Load the complete dataset, including 0 - 9
 used_labels = list(range(0, 10))    # the labels to be loaded
 x_train, y_train, x_test, y_test, class_names = DLCVDatasets.get_dataset(dataset_name,
                                                                          used_labels=used_labels,
@@ -47,7 +48,7 @@ x_train = np.reshape(x_train, x_train.shape+(1,))
 x_test = np.reshape(x_test, x_test.shape+(1,))
 
 x_2 = x_test[y_test == 2]
-encoding_2_0 = tf.math.l2_normalize(lenet(x_2[[0],]))
+encoding_2_0 = tf.math.l2_normalize(lenet(x_2[[0],]))   # this strange [[0],] indexing is to keep dimensions after index slicing
 encoding_2_1 = tf.math.l2_normalize(lenet(x_2[[20],]))
 
 x_5 = x_test[y_test == 5]

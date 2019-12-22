@@ -1,4 +1,3 @@
-# %% 
 import tensorflow as tf 
 import numpy as np 
 
@@ -28,13 +27,11 @@ class CenterLoss:
         appear_times = tf.reshape(appear_times, (-1, 1))
         delta = delta / tf.cast((1 + appear_times), tf.float32)
         delta = tf.scalar_mul(self.alpha, delta)
-
-        labels = tf.expand_dims(labels, -1)
+        labels = tf.expand_dims(labels, -1) # to match dim of self.centers
         self.centers.assign(tf.tensor_scatter_nd_sub(self.centers, labels, delta))
 
         return loss, tf.identity(self.centers)
 
-# %% 
 @tf.function
 def train_one_step_centerloss(model, additional_layer,
                 x_batch_train, y_batch_train, 
@@ -51,7 +48,7 @@ def train_one_step_centerloss(model, additional_layer,
     optimizer.apply_gradients(zip(grads[0], additional_layer.trainable_variables))
     optimizer.apply_gradients(zip(grads[1], model.trainable_variables))
 
-    return softmax_loss, center_loss, centers
+    return softmax_loss, center_loss, total_loss, centers
 
 def train_model_with_centerloss(model, train_data, train_labels,
                 test_data, test_labels, num_classes, len_encoding,
@@ -62,25 +59,29 @@ def train_model_with_centerloss(model, train_data, train_labels,
     train_dataset = tf.data.Dataset.from_tensor_slices((train_data, train_labels))
     train_dataset = train_dataset.shuffle(buffer_size=1024).batch(batch_size)
 
+    # Additional layer for softmax loss (cross-entropy loss)
+    additional_layer = tf.keras.layers.Dense(num_classes)
+
     optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
     metric = tf.metrics.Accuracy()
 
+    # Get loss function objects
     scce_fn = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
     center_loss_fn = CenterLoss(0.2, num_classes, len_encoding)
 
+    # Placeholder for total loss over an epoch
     overall_total_loss = tf.Variable(0, dtype=tf.float32)
-    additional_layer = tf.keras.layers.Dense(num_classes)
-
+    
     # Train network
     for epoch in range(num_epochs):
         # Iterate over minibatches
         metric.reset_states()
         overall_total_loss.assign(0.0)
         for step, (x_batch_train, y_batch_train) in enumerate(train_dataset):
-            softmax_loss, center_loss, centers = train_one_step_centerloss(model, additional_layer, 
-                                                                           x_batch_train, y_batch_train, 
-                                                                           scce_fn, center_loss_fn, ratio, 
-                                                                           optimizer, metric)
+            softmax_loss, center_loss, total_loss, centers = train_one_step_centerloss(model, additional_layer, 
+                                                                                       x_batch_train, y_batch_train, 
+                                                                                       scce_fn, center_loss_fn, ratio, 
+                                                                                       optimizer, metric)
         
             overall_total_loss.assign_add(softmax_loss + center_loss)
         train_accuracy = metric.result()
