@@ -33,7 +33,7 @@ lenet.summary()
 # %% Train the model with center loss
 utils_center_loss.train_model_with_centerloss(lenet, x_train, y_train,
                                               x_test, y_test, num_classes=10, len_encoding=64,
-                                              num_epochs= 10, batch_size=64,
+                                              num_epochs=10, batch_size=64,
                                               learning_rate=0.005, ratio=0.01)
 
 # %% Evaluate the model
