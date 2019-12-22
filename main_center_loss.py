@@ -3,12 +3,12 @@ import tensorflow as tf
 import numpy as np 
 import DLCVDatasets
 import lenet_model
-import utils
+import utils_center_loss
 
 # %% Load and preprocess data
 dataset_name = 'mnist'    # mnist or cifar10
-train_size = 6000
-test_size = 1000
+train_size = 60000
+test_size = 10000
 used_labels = list(range(0, 9))    # the labels to be loaded
 num_classes = len(used_labels)
 x_train, y_train, x_test, y_test, class_names = DLCVDatasets.get_dataset(dataset_name,
@@ -31,10 +31,10 @@ lenet = lenet_model.get_lenet_model(input_shape=input_shape)
 lenet.summary()
 
 # %%
-utils.train_model_with_centerloss(lenet, x_train, y_train,
-                x_test, y_test, num_classes=10, len_encoding=64,
-                num_epochs= 3, batch_size=64,
-                learning_rate=0.005, ratio=0.01)
+utils_center_loss.train_model_with_centerloss(lenet, x_train, y_train,
+                                              x_test, y_test, num_classes=10, len_encoding=64,
+                                              num_epochs= 3, batch_size=64,
+                                              learning_rate=0.005, ratio=0.01)
 
 # %%
 used_labels = list(range(0, 10))    # the labels to be loaded
@@ -73,7 +73,5 @@ print('5 & 6: {}'.format(tf.norm(encoding_5_0 - encoding_6_0).numpy()))
 print('9 & 9: {}'.format(tf.norm(encoding_9_0 - encoding_9_1).numpy()))
 print('5 & 9: {}'.format(tf.norm(encoding_5_0 - encoding_9_0).numpy()))
 print('6 & 9: {}'.format(tf.norm(encoding_6_0 - encoding_9_0).numpy()))
-
-
 
 # %%
