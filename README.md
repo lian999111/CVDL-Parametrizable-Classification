@@ -1,2 +1,3 @@
 # CVDL-Parametrizable-Classification
-The aim of this project is to study the performance of a neural network classifier that can be triggered to react to the different classes of objects that it is presented with at the input layer.
+The aim of this project is to study parameterizble classifier using the concept of Siamese Networks.
+Performance of different losses are tested, including triplet loss and center loss.
