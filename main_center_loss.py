@@ -9,7 +9,7 @@ import utils_center_loss
 dataset_name = 'mnist'    # mnist or cifar10
 train_size = 60000
 test_size = 10000
-used_labels = list(range(0, 5))    # the labels to be loaded
+used_labels = list(range(0, 9))    # the labels to be loaded
 num_classes = len(used_labels)
 x_train, y_train, x_test, y_test, class_names = DLCVDatasets.get_dataset(dataset_name,
                                                                          used_labels=used_labels,
