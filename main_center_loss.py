@@ -55,11 +55,11 @@ x_5 = x_test[y_test == 5]
 encoding_5_0 = tf.math.l2_normalize(lenet(x_5[[0],]))
 encoding_5_1 = tf.math.l2_normalize(lenet(x_5[[20],]))
 
-x_6 = x_test[y_test == 8]
+x_6 = x_test[y_test == 6]
 encoding_6_0 = tf.math.l2_normalize(lenet(x_6[[0],]))
 encoding_6_1 = tf.math.l2_normalize(lenet(x_6[[20],]))
 
-x_9 = x_test[y_test == 6]
+x_9 = x_test[y_test == 9]
 encoding_9_0 = tf.math.l2_normalize(lenet(x_9[[0],]))
 encoding_9_1 = tf.math.l2_normalize(lenet(x_9[[20],]))
 
