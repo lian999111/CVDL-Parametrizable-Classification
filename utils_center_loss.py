@@ -53,7 +53,7 @@ def train_one_step_centerloss(model, additional_layer,
 def train_model_with_centerloss(model, train_data, train_labels,
                 test_data, test_labels, num_classes, len_encoding,
                 num_epochs=20, batch_size=128,
-                learning_rate=0.001, ratio=0.1):
+                learning_rate=0.001, alpha=0.2, ratio=0.1):
 
     # Generate tf.data.Dataset
     train_dataset = tf.data.Dataset.from_tensor_slices((train_data, train_labels))
@@ -67,7 +67,7 @@ def train_model_with_centerloss(model, train_data, train_labels,
 
     # Get loss function objects
     scce_fn = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
-    center_loss_fn = CenterLoss(0.2, num_classes, len_encoding)
+    center_loss_fn = CenterLoss(alpha, num_classes, len_encoding)
 
     # Placeholder for total loss over an epoch
     overall_total_loss = tf.Variable(0, dtype=tf.float32)
