@@ -75,4 +75,13 @@ print('9 & 9: {}'.format(tf.norm(encoding_9_0 - encoding_9_1).numpy()))
 print('5 & 9: {}'.format(tf.norm(encoding_5_0 - encoding_9_0).numpy()))
 print('6 & 9: {}'.format(tf.norm(encoding_6_0 - encoding_9_0).numpy()))
 
+# %% Intraclass test
+test_num = 0
+anchor_idx = 0
+x = x_test[y_test == test_num]
+encoding_anchor = tf.math.l2_normalize(lenet(x[[anchor_idx],]))
+for idx in range(0, 100):
+    encoding = tf.math.l2_normalize(lenet(x[[idx],]))
+    print('Intraclass: No.{}, id{} & id{}: {}'.format(test_num, anchor_idx, idx, tf.norm(encoding - encoding_anchor).numpy()))
+
 # %%
