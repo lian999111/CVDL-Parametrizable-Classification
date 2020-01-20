@@ -57,7 +57,7 @@ def train_model_with_centerloss(model, train_data, train_labels,
 
     # Generate tf.data.Dataset
     train_dataset = tf.data.Dataset.from_tensor_slices((train_data, train_labels))
-    train_dataset = train_dataset.shuffle(buffer_size=1024).batch(batch_size)
+    train_dataset = train_dataset.batch(batch_size)
 
     # Additional layer for softmax loss (cross-entropy loss)
     additional_layer = tf.keras.layers.Dense(num_classes)
@@ -90,7 +90,7 @@ def train_model_with_centerloss(model, train_data, train_labels,
         # Model evaluation on test set for this epoch
         metric.reset_states()
         test_dataset = tf.data.Dataset.from_tensor_slices((test_data, test_labels))
-        test_dataset = test_dataset.shuffle(buffer_size=1024).batch(batch_size)
+        test_dataset = test_dataset.batch(batch_size)
         for x_batch_test, y_batch_test in test_dataset:
             encodings_test = model(x_batch_test)
             logits = additional_layer(encodings_test)

@@ -1,6 +1,16 @@
 # %%
-import tensorflow as tf 
+# TODO: This makes sure the weights are initialized the same, but results after training still not reproducible
+seed_value = 1
+import os
+os.environ['PYTHONHASHSEED']=str(seed_value)
+os.environ['TF_CUDNN_DETERMINISTIC'] = '1'  # new flag present in tf 2.0+
+import random
+random.seed(seed_value)
 import numpy as np 
+np.random.seed(seed_value)
+import tensorflow as tf 
+tf.random.set_seed(seed_value)   
+
 import DLCVDatasets
 import lenet_model
 import utils_center_loss
