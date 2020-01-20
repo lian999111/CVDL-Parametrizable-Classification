@@ -42,8 +42,17 @@ def cal_pairwise_dists(embeddings, squared=False):
 
     return distances
 
-def l2_normalize(v, axis=1):
-    norm = np.linalg.norm(v, axis=axis)
+def l2_normalize(embeddings, axis=1):
+    """L2 normalize embeddings.
+
+    Args:
+        embeddings: Numpy array of shape (num_samples, embed_dim)
+        axis: Axis along the embedding dimension
+
+    Returns:
+        normalized_embeddings: numpy array of shape (num_samples, embed_dim)
+    """
+    norm = np.linalg.norm(embeddings, axis=axis)
     mask = np.equal(norm, 0.0).astype(np.float64)
     norm = norm + mask * 1e-16      # avoid division-by-zero
-    return v / norm[:, np.newaxis]  # add newaxis for correct broadcasting
+    return embeddings / norm[:, np.newaxis]  # add newaxis for correct broadcasting
