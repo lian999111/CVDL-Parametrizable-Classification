@@ -14,6 +14,7 @@ tf.random.set_seed(seed_value)
 import DLCVDatasets
 import lenet_model
 import utils_center_loss
+import matplotlib.pyplot as plt
 
 # %% Load and preprocess data
 dataset_name = 'mnist'    # mnist or cifar10
@@ -43,8 +44,8 @@ lenet.summary()
 # %% Train the model with center loss
 utils_center_loss.train_model_with_centerloss(lenet, x_train, y_train,
                                               x_test, y_test, num_classes=10, len_encoding=64,
-                                              num_epochs=5, batch_size=64,
-                                              learning_rate=0.005, alpha=0.1, ratio=0.5)
+                                              num_epochs=2, batch_size=64,
+                                              learning_rate=0.005, alpha=0.1, ratio=0.2)
 
 # %% Evaluate the model
 # Load the complete dataset, including 0 - 9
@@ -57,21 +58,71 @@ x_train, y_train, x_test, y_test, class_names = DLCVDatasets.get_dataset(dataset
 x_train = np.reshape(x_train, x_train.shape+(1,))
 x_test = np.reshape(x_test, x_test.shape+(1,))
 
-x_2 = x_test[y_test == 2]
-encoding_2_0 = tf.math.l2_normalize(lenet(x_2[[0],]))   # this strange [[0],] indexing is to keep dimensions after index slicing
-encoding_2_1 = tf.math.l2_normalize(lenet(x_2[[20],]))
+# Arrange test images into dict
+x = {}
+for idx in range(10):
+    x[str(idx)] = x_test[y_test == idx]
+
+img2_1 = x['2'][[0],]
+
+encoding_2_0 = tf.math.l2_normalize(lenet(x['2'][[0],]))   # this strange [[0],] indexing is to keep dimensions after index slicing
+encoding_2_1 = tf.math.l2_normalize(lenet(x['2'][[20],]))
 
 x_5 = x_test[y_test == 5]
-encoding_5_0 = tf.math.l2_normalize(lenet(x_5[[0],]))
-encoding_5_1 = tf.math.l2_normalize(lenet(x_5[[20],]))
+encoding_5_0 = tf.math.l2_normalize(lenet(x['5'][[0],]))
+encoding_5_1 = tf.math.l2_normalize(lenet(x['5'][[20],]))
 
 x_6 = x_test[y_test == 6]
-encoding_6_0 = tf.math.l2_normalize(lenet(x_6[[0],]))
-encoding_6_1 = tf.math.l2_normalize(lenet(x_6[[20],]))
+encoding_6_0 = tf.math.l2_normalize(lenet(x['6'][[0],]))
+encoding_6_1 = tf.math.l2_normalize(lenet(x['6'][[20],]))
+
 
 x_9 = x_test[y_test == 9]
-encoding_9_0 = tf.math.l2_normalize(lenet(x_9[[0],]))
-encoding_9_1 = tf.math.l2_normalize(lenet(x_9[[20],]))
+encoding_9_0 = tf.math.l2_normalize(lenet(x['9'][[0],]))
+encoding_9_1 = tf.math.l2_normalize(lenet(x['9'][[20],]))
+
+# Visualization
+plt.figure(1)
+pixels = np.array(x['2'][[0],], dtype='uint8')
+pixels = pixels.reshape((28, 28))
+plt.subplot(421)
+plt.imshow(pixels, cmap='gray')
+
+pixels = np.array(x['2'][[20],], dtype='uint8')
+pixels = pixels.reshape((28, 28))
+plt.subplot(422)
+plt.imshow(pixels, cmap='gray')
+
+pixels = np.array(x['5'][[0],], dtype='uint8')
+pixels = pixels.reshape((28, 28))
+plt.subplot(423)
+plt.imshow(pixels, cmap='gray')
+
+pixels = np.array(x['5'][[20],], dtype='uint8')
+pixels = pixels.reshape((28, 28))
+plt.subplot(424)
+plt.imshow(pixels, cmap='gray')
+
+pixels = np.array(x['6'][[0],], dtype='uint8')
+pixels = pixels.reshape((28, 28))
+plt.subplot(425)
+plt.imshow(pixels, cmap='gray')
+
+pixels = np.array(x['6'][[20],], dtype='uint8')
+pixels = pixels.reshape((28, 28))
+plt.subplot(426)
+plt.imshow(pixels, cmap='gray')
+
+pixels = np.array(x['9'][[0],], dtype='uint8')
+pixels = pixels.reshape((28, 28))
+plt.subplot(427)
+plt.imshow(pixels, cmap='gray')
+
+pixels = np.array(x['9'][[20],], dtype='uint8')
+pixels = pixels.reshape((28, 28))
+plt.subplot(428)
+plt.imshow(pixels, cmap='gray')
+plt.show()
 
 print('2 & 2: {}'.format(tf.norm(encoding_2_0 - encoding_2_1).numpy()))
 print('2 & 5: {}'.format(tf.norm(encoding_2_0 - encoding_5_0).numpy()))
@@ -93,5 +144,19 @@ encoding_anchor = tf.math.l2_normalize(lenet(x[[anchor_idx],]))
 for idx in range(0, 100):
     encoding = tf.math.l2_normalize(lenet(x[[idx],]))
     print('Intraclass: No.{}, id{} & id{}: {}'.format(test_num, anchor_idx, idx, tf.norm(encoding - encoding_anchor).numpy()))
+
+# %% Save results for embedding projector
+import io
+
+out_v = io.open('vecs5.tsv', 'w', encoding='utf-8')
+out_m = io.open('meta5.tsv', 'w', encoding='utf-8')
+
+for idx, img in enumerate(x_test[:100]):
+    out_m.write(str(y_test[idx]) + "\t")
+    embedding = tf.math.l2_normalize(lenet(x_test[[idx],]))
+    out_v.write('\t'.join([str(x) for x in embedding.numpy().tostring()]) + "\n")
+
+out_v.close()
+out_m.close()
 
 # %%
