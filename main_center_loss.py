@@ -60,7 +60,7 @@ x_train = np.reshape(x_train, x_train.shape+(1,))
 x_test = np.reshape(x_test, x_test.shape+(1,))
 
 # Sort test samples in ascending order (from 0 to 9)
-sorted_idc = np.argsort(y_test)
+sorted_idc = np.argsort(y_test, kind='stable')
 x_test = x_test[sorted_idc]
 y_test = y_test[sorted_idc]
 
