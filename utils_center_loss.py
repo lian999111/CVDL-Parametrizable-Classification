@@ -56,6 +56,8 @@ def train_model_with_centerloss(model, train_data, train_labels,
                 learning_rate=0.001, alpha=0.2, ratio=0.1):
 
     # Generate tf.data.Dataset
+    num_train_samples = train_data.shape[0]
+    num_test_samples = test_data.shape[0]
     train_dataset = tf.data.Dataset.from_tensor_slices((train_data, train_labels))
     train_dataset = train_dataset.batch(batch_size)
 
@@ -85,6 +87,7 @@ def train_model_with_centerloss(model, train_data, train_labels,
         
             overall_total_loss.assign_add(softmax_loss + center_loss)
         train_accuracy = metric.result()
+        overall_total_loss.assign(overall_total_loss / num_train_samples)
         print('Epoch: {}: Train Loss: {}, Train Accuracy: {}'.format(epoch, overall_total_loss.numpy(), train_accuracy))
 
         # Model evaluation on test set for this epoch
