@@ -39,7 +39,8 @@ def make_successive_labels(y):
 def get_dataset(dataset='mnist',
                 used_labels=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
                 training_size=60000,
-                test_size=10000):
+                test_size=10000,
+                shuffle=False):
     """ 
     Reads and converts data from the MNIST dataset. 
 
@@ -130,23 +131,29 @@ def get_dataset(dataset='mnist',
     original_training_size = x_train.shape[0]
     original_test_size = x_test.shape[0]
 
-    # take a small random subset of images (size is given in training_size and test_size)
-    training_idxs = np.arange(original_training_size)
-    np.random.shuffle(training_idxs)
-    training_idxs = training_idxs[0:training_size]
-    x_train = x_train[training_idxs]
-    y_train = y_train[training_idxs]
-    y_train = y_train.astype(np.int32)
+    if shuffle:
+        # take a small random subset of images (size is given in training_size and test_size)
+        training_idxs = np.arange(original_training_size)
+        np.random.shuffle(training_idxs)
+        training_idxs = training_idxs[0:training_size]
+        x_train = x_train[training_idxs]
+        y_train = y_train[training_idxs]
+        y_train = y_train.astype(np.int32)
 
-    test_idxs = np.arange(original_test_size)
-    np.random.shuffle(test_idxs)
-    test_idxs = test_idxs[0:test_size]
-    x_test = x_test[test_idxs]
-    y_test = y_test[test_idxs]
-    y_test = y_test.astype(np.int32)
+        test_idxs = np.arange(original_test_size)
+        np.random.shuffle(test_idxs)
+        test_idxs = test_idxs[0:test_size]
+        x_test = x_test[test_idxs]
+        y_test = y_test[test_idxs]
+        y_test = y_test.astype(np.int32)
 
-    x_train = x_train.astype(np.float32)
-    x_test = x_test.astype(np.float32)
+        x_train = x_train.astype(np.float32)
+        x_test = x_test.astype(np.float32)
+    else:
+        x_train = x_train[:training_size].astype(np.float32)
+        y_train = y_train[:training_size].astype(np.int32)
+        x_test = x_test[:test_size].astype(np.float32)
+        y_test = y_test[:test_size].astype(np.int32)
 
     return x_train, y_train, x_test, y_test, class_names
 
