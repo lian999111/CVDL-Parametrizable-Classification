@@ -39,12 +39,13 @@ x_test = np.reshape(x_test, x_test.shape+(1,))
 input_shape = x_train.shape[1:]
 
 # %% Get the model
-lenet = lenet_model.get_lenet_model(input_shape=input_shape)
+encoding_dim = 16
+lenet = lenet_model.get_lenet_model(input_shape=input_shape, encoding_dim=encoding_dim)
 lenet.summary()
 
 # %% Train the model with center loss
 utils_center_loss.train_model_with_centerloss(lenet, x_train, y_train,
-                                              x_test, y_test, num_classes=10, len_encoding=64,
+                                              x_test, y_test, num_classes=10, len_encoding=encoding_dim,
                                               num_epochs=2, batch_size=64,
                                               learning_rate=0.005, alpha=0.1, ratio=0.2)
 
