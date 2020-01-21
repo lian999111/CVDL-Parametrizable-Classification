@@ -166,17 +166,33 @@ for idx in range(0, 100):
     print('Intraclass: No.{}, id{} & id{}: {}'.format(test_num, anchor_idx, idx, tf.norm(encoding - encoding_anchor).numpy()))
 
 # %% Save results for embedding projector
-# import io
+import os
+import csv
 
-# out_v = io.open('vecs5.tsv', 'w', encoding='utf-8')
-# out_m = io.open('meta5.tsv', 'w', encoding='utf-8')
+used_labels = list(range(0, 10))    # the labels to be loaded
+x_train, y_train, x_test, y_test, class_names = DLCVDatasets.get_dataset(dataset_name,
+                                                                         used_labels=used_labels,
+                                                                         training_size=train_size,
+                                                                         test_size=test_size)
+# Reshape to add the channel dimension
+x_train = np.reshape(x_train, x_train.shape+(1,))
+x_test = np.reshape(x_test, x_test.shape+(1,))
 
-# for idx, img in enumerate(x_test[:100]):
-#     out_m.write(str(y_test[idx]) + "\t")
-#     embedding = tf.math.l2_normalize(lenet(x_test[[idx],]))
-#     out_v.write('\t'.join([str(x) for x in embedding.numpy().tostring()]) + "\n")
+# Compute encodings and pairwise euclidean distances
+encodings = lenet.predict(x_test)
+normalized_encodings = l2_normalize(encodings)
 
-# out_v.close()
-# out_m.close()
+dirname = os.path.dirname('log/centerloss')
+if not os.path.exists(dirname):
+    os.makedirs(dirname)
+with open(dirname+'/metadata.tsv', 'w') as metadata_file:
+    metadata_file.write('Index\tLabel\n')
+    for idx, row in enumerate(y_test):
+        metadata_file.write('%d\t%d\n' % (idx, row))
+
+with open(dirname+'/feature_vecs.tsv', 'w') as fw:
+    csv_writer = csv.writer(fw, delimiter='\t')
+    for vec in normalized_encodings:
+        csv_writer.writerow(vec)
 
 # %%
