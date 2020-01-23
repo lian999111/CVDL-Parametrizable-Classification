@@ -39,7 +39,7 @@ input_shape = x_train.shape[1:]
 # %% Get the model
 encoding_dim = 128
 normalized_encodings = True
-model = models.get_model_v2(=input_shape, encoding_dim, normalized_encodings)
+model = models.get_model_v2(input_shape, encoding_dim, normalized_encodings)
 model.summary()
 
 # %% Train the model with center loss
@@ -49,9 +49,9 @@ learning_rate=0.005
 alpha=0.1
 ratio=0.01
 utils_center_loss.train_model_with_centerloss(model, x_train, y_train,
-                                              x_test, y_test, num_classes=10, len_encoding=encoding_dim,
-                                              num_epochs=num_epochs, batch_size=batch_size,
-                                              learning_rate=learning_rate, alpha=alpha, ratio=ratio)
+                                              x_test, y_test, num_classes, encoding_dim,
+                                              num_epochs, batch_size,
+                                              learning_rate, alpha, ratio)
 
 # %% Evaluate the model
 # Load the complete dataset, including 0 - 9
