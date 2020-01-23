@@ -39,20 +39,21 @@ input_shape = x_train.shape[1:]
 # %% Get the model
 encoding_dim = 2
 normalized_encodings = False
-model = models.get_model_v3(input_shape, encoding_dim, normalized_encodings)
+model = models.get_model_v1(input_shape, encoding_dim, normalized_encodings)
 model.summary()
 
 # %% Train the model with center loss
-num_epochs = 15
+use_last_bias = False
+num_epochs = 20
 batch_size = 128
-learning_rate = 0.0005
+learning_rate = 0.001
 alpha = 0.5
-ratio = 1
+ratio = 0.5
 utils_center_loss.train_model_with_centerloss(model, x_train, y_train,
-                                              x_test, y_test, num_classes, encoding_dim,
+                                              x_test, y_test, num_classes, encoding_dim, use_last_bias,
                                               num_epochs, batch_size,
                                               learning_rate, alpha, ratio)
-model.save('model_lenet++.h5')
+model.save('model.h5')
 
 # %% Evaluate the model
 # Load the complete dataset, including 0 - 9
