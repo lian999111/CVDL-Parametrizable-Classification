@@ -29,8 +29,6 @@ x_train, y_train, x_test, y_test, class_names = DLCVDatasets.get_dataset(dataset
                                                                          test_size=test_size)
 # Normalization
 mean = np.mean(x_train)
-x_train -= mean
-x_test -= mean
 x_train, x_test = x_train / 255.0, x_test / 255.0
 
 # Reshape to add the channel dimension
@@ -56,6 +54,9 @@ x_train, y_train, x_test, y_test, class_names = DLCVDatasets.get_dataset(dataset
                                                                          used_labels=used_labels,
                                                                          training_size=train_size,
                                                                          test_size=test_size)
+# Normalize data
+x_train, x_test = x_train / 255.0, x_test / 255.0
+
 # Reshape to add the channel dimension
 x_train = np.reshape(x_train, x_train.shape+(1,))
 x_test = np.reshape(x_test, x_test.shape+(1,))
@@ -174,6 +175,10 @@ x_train, y_train, x_test, y_test, class_names = DLCVDatasets.get_dataset(dataset
                                                                          used_labels=used_labels,
                                                                          training_size=train_size,
                                                                          test_size=test_size)
+
+# Normalize data
+x_train, x_test = x_train / 255.0, x_test / 255.0
+
 # Reshape to add the channel dimension
 x_train = np.reshape(x_train, x_train.shape+(1,))
 x_test = np.reshape(x_test, x_test.shape+(1,))
