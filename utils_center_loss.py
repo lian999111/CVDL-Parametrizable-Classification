@@ -74,7 +74,7 @@ def train_model_with_centerloss(model, train_data, train_labels,
     train_dataset = train_dataset.batch(batch_size)
 
     # Additional layer for softmax loss (cross-entropy loss)
-    additional_layer = tf.keras.layers.Dense(num_classes)
+    additional_layer = tf.keras.layers.Dense(num_classes, use_bias=False)
 
     # Get loss function objects
     scce_fn = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
