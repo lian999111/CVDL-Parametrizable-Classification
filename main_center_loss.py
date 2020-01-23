@@ -47,7 +47,7 @@ num_epochs = 40
 batch_size = 128
 learning_rate = 0.001
 alpha = 0.5
-ratio = 0.5
+ratio = 1
 utils_center_loss.train_model_with_centerloss(model, x_train, y_train,
                                               x_test, y_test, num_classes, encoding_dim,
                                               num_epochs, batch_size,
@@ -170,7 +170,7 @@ for idx in range(0, 100):
     print('Intraclass: No.{}, id{} & id{}: {}'.format(test_num, anchor_idx, idx, tf.norm(encoding - encoding_anchor).numpy()))
 
 # %% Scatter plot 2D encodings
-plt.scatter(encodings[:, 0], encodings[:, 1], c=y_test)
+plt.scatter(encodings[:, 0], encodings[:, 1], c=y_test, alpha=0.5)
 plt.show()
 
 # %% Save results for embedding projector
