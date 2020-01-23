@@ -7,6 +7,7 @@ class CenterLoss:
         self.alpha = alpha
         self.num_classes = num_classes
         self.len_encoding = len_encoding
+        # Centers are not updated by gradient descent
         self.centers = tf.Variable(np.zeros((num_classes, len_encoding), dtype=np.float32), trainable=False)
     
     @tf.function
@@ -66,6 +67,8 @@ def train_model_with_centerloss(model, train_data, train_labels,
                 test_data, test_labels, num_classes, len_encoding, use_last_bias,
                 num_epochs=20, batch_size=128,
                 learning_rate=0.001, alpha=0.2, ratio=0.1):
+    # Note: If use_last_bias = False, the last layer can only do linear classification with lines
+    # passing through origin, leaving the encodings to spread into a ring shape
 
     # Generate tf.data.Dataset
     num_train_samples = train_data.shape[0]
