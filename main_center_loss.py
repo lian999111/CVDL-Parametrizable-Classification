@@ -42,10 +42,15 @@ lenet = lenet_model.get_lenet_model(input_shape=input_shape, encoding_dim=encodi
 lenet.summary()
 
 # %% Train the model with center loss
+num_epochs = 10
+batch_size=64
+learning_rate=0.005
+alpha=0.1
+ratio=0.01
 utils_center_loss.train_model_with_centerloss(lenet, x_train, y_train,
                                               x_test, y_test, num_classes=10, len_encoding=encoding_dim,
-                                              num_epochs=2, batch_size=64,
-                                              learning_rate=0.005, alpha=0.1, ratio=0.2)
+                                              num_epochs=num_epochs, batch_size=batch_size,
+                                              learning_rate=learning_rate, alpha=alpha, ratio=ratio)
 
 # %% Evaluate the model
 # Load the complete dataset, including 0 - 9
