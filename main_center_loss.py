@@ -44,7 +44,7 @@ model.summary()
 
 # %% Train the model with center loss
 num_epochs = 40
-batch_size = 64
+batch_size = 128
 learning_rate = 0.001
 alpha = 0.5
 ratio = 0.5
