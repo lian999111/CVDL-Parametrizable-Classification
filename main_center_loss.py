@@ -45,7 +45,7 @@ model.summary()
 # %% Train the model with center loss
 num_epochs = 15
 batch_size = 128
-learning_rate = 0.001
+learning_rate = 0.0005
 alpha = 0.5
 ratio = 1
 utils_center_loss.train_model_with_centerloss(model, x_train, y_train,
