@@ -37,9 +37,10 @@ x_test = np.reshape(x_test, x_test.shape+(1,))
 input_shape = x_train.shape[1:]
 
 # %% Get the model
-encoding_dim = 16
-lenet = lenet_model.get_lenet_model(input_shape=input_shape, encoding_dim=encoding_dim)
-lenet.summary()
+encoding_dim = 128
+normalized_encodings = True
+model = models.get_model_v2(=input_shape, encoding_dim, normalized_encodings)
+model.summary()
 
 # %% Train the model with center loss
 num_epochs = 10
@@ -47,7 +48,7 @@ batch_size=64
 learning_rate=0.005
 alpha=0.1
 ratio=0.01
-utils_center_loss.train_model_with_centerloss(lenet, x_train, y_train,
+utils_center_loss.train_model_with_centerloss(model, x_train, y_train,
                                               x_test, y_test, num_classes=10, len_encoding=encoding_dim,
                                               num_epochs=num_epochs, batch_size=batch_size,
                                               learning_rate=learning_rate, alpha=alpha, ratio=ratio)
@@ -77,7 +78,7 @@ for idx in range(10):
     digits_idc[str(idx)] = np.argwhere(y_test == idx)
 
 # Compute encodings and pairwise euclidean distances
-encodings = lenet.predict(x_test)
+encodings = model.predict(x_test)
 normalized_encodings = l2_normalize(encodings)
 pairwise_dists = cal_pairwise_dists(normalized_encodings)
 
@@ -91,17 +92,17 @@ img6_1_idx = digits_idc['6'][20]
 img9_0_idx = digits_idc['9'][0]
 img9_1_idx = digits_idc['9'][20]
 
-encoding_2_0 = tf.math.l2_normalize(lenet(x_test[img2_0_idx]))
-encoding_2_1 = tf.math.l2_normalize(lenet(x_test[img2_1_idx]))
+encoding_2_0 = tf.math.l2_normalize(model(x_test[img2_0_idx]))
+encoding_2_1 = tf.math.l2_normalize(model(x_test[img2_1_idx]))
 
-encoding_5_0 = tf.math.l2_normalize(lenet(x_test[img5_0_idx]))
-encoding_5_1 = tf.math.l2_normalize(lenet(x_test[img5_1_idx]))
+encoding_5_0 = tf.math.l2_normalize(model(x_test[img5_0_idx]))
+encoding_5_1 = tf.math.l2_normalize(model(x_test[img5_1_idx]))
 
-encoding_6_0 = tf.math.l2_normalize(lenet(x_test[img6_0_idx]))
-encoding_6_1 = tf.math.l2_normalize(lenet(x_test[img6_1_idx]))
+encoding_6_0 = tf.math.l2_normalize(model(x_test[img6_0_idx]))
+encoding_6_1 = tf.math.l2_normalize(model(x_test[img6_1_idx]))
 
-encoding_9_0 = tf.math.l2_normalize(lenet(x_test[img9_0_idx]))
-encoding_9_1 = tf.math.l2_normalize(lenet(x_test[img9_1_idx]))
+encoding_9_0 = tf.math.l2_normalize(model(x_test[img9_0_idx]))
+encoding_9_1 = tf.math.l2_normalize(model(x_test[img9_1_idx]))
 
 # Visualization
 plt.figure(1)
@@ -159,12 +160,12 @@ print('5 & 9: {}'.format(tf.norm(encoding_5_0 - encoding_9_0).numpy()))
 print('6 & 9: {}'.format(tf.norm(encoding_6_0 - encoding_9_0).numpy()))
 
 # %% Intraclass test
-test_num = 0
+test_num = 9
 anchor_idx = 0
 x = x_test[y_test == test_num]
-encoding_anchor = tf.math.l2_normalize(lenet(x[[anchor_idx],]))
+encoding_anchor = tf.math.l2_normalize(model(x[[anchor_idx],]))
 for idx in range(0, 100):
-    encoding = tf.math.l2_normalize(lenet(x[[idx],]))
+    encoding = tf.math.l2_normalize(model(x[[idx],]))
     print('Intraclass: No.{}, id{} & id{}: {}'.format(test_num, anchor_idx, idx, tf.norm(encoding - encoding_anchor).numpy()))
 
 # %% Save results for embedding projector
@@ -185,7 +186,7 @@ x_train = np.reshape(x_train, x_train.shape+(1,))
 x_test = np.reshape(x_test, x_test.shape+(1,))
 
 # Compute encodings and pairwise euclidean distances
-encodings = lenet.predict(x_test)
+encodings = model.predict(x_test)
 normalized_encodings = l2_normalize(encodings)
 
 dirname = 'log/centerloss'
