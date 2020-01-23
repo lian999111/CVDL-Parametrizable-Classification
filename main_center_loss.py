@@ -12,7 +12,7 @@ import tensorflow as tf
 tf.random.set_seed(seed_value)   
 
 import DLCVDatasets
-import lenet_model
+import models
 import utils_center_loss
 from utils import cal_pairwise_dists, l2_normalize
 import matplotlib.pyplot as plt
