@@ -3,9 +3,9 @@ import tensorflow as tf
 # The base LeNet-alike model. To use center loss, an additional layer has to be used.
 def get_model_v1(input_shape, encoding_dim=64, normalize_encoding=True):
     model = tf.keras.Sequential([
-        tf.keras.layers.Conv2D(32, (3, 3), padding='same', input_shape=input_shape),
+        tf.keras.layers.Conv2D(32, (3, 3), padding='same', activation='relu', input_shape=input_shape),
         tf.keras.layers.MaxPool2D((2, 2)),
-        tf.keras.layers.Conv2D(64, (3, 3), padding='same'),
+        tf.keras.layers.Conv2D(64, (3, 3), padding='same', activation='relu'),
         tf.keras.layers.MaxPool2D((2, 2)),
         tf.keras.layers.Flatten(),
         tf.keras.layers.Dense(128, activation='relu'),
@@ -18,9 +18,9 @@ def get_model_v1(input_shape, encoding_dim=64, normalize_encoding=True):
 
 def get_model_v2(input_shape, encoding_dim=64, normalize_encoding=True):
     model = tf.keras.Sequential([
-        tf.keras.layers.Conv2D(32, (3, 3), padding='same', input_shape=input_shape),
+        tf.keras.layers.Conv2D(32, (3, 3), padding='same', activation='relu', input_shape=input_shape),
         tf.keras.layers.MaxPool2D((2, 2)),
-        tf.keras.layers.Conv2D(64, (3, 3), padding='same'),
+        tf.keras.layers.Conv2D(64, (3, 3), padding='same', activation='relu'),
         tf.keras.layers.MaxPool2D((2, 2)),
         tf.keras.layers.Flatten(),
         tf.keras.layers.Dense(128, activation='relu'),
