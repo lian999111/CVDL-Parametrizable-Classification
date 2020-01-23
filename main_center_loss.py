@@ -43,7 +43,7 @@ model = models.get_model_v3(input_shape, encoding_dim, normalized_encodings)
 model.summary()
 
 # %% Train the model with center loss
-num_epochs = 10
+num_epochs = 40
 batch_size = 64
 learning_rate = 0.001
 alpha = 0.5
@@ -52,7 +52,7 @@ utils_center_loss.train_model_with_centerloss(model, x_train, y_train,
                                               x_test, y_test, num_classes, encoding_dim,
                                               num_epochs, batch_size,
                                               learning_rate, alpha, ratio)
-model.save('model1.h5')
+model.save('model_lenet++.h5')
 
 # %% Evaluate the model
 # Load the complete dataset, including 0 - 9
@@ -189,6 +189,7 @@ x_test = np.reshape(x_test, x_test.shape+(1,))
 # Compute encodings and pairwise euclidean distances
 encodings = model.predict(x_test)
 normalized_encodings = l2_normalize(encodings)
+normalized_encodings = encodings
 
 dirname = 'log/centerloss'
 if not os.path.exists(dirname):
