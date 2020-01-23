@@ -94,16 +94,12 @@ img9_1_idx = digits_idc['9'][20]
 encoding_2_0 = tf.math.l2_normalize(lenet(x_test[img2_0_idx]))
 encoding_2_1 = tf.math.l2_normalize(lenet(x_test[img2_1_idx]))
 
-x_5 = x_test[y_test == 5]
 encoding_5_0 = tf.math.l2_normalize(lenet(x_test[img5_0_idx]))
 encoding_5_1 = tf.math.l2_normalize(lenet(x_test[img5_1_idx]))
 
-x_6 = x_test[y_test == 6]
 encoding_6_0 = tf.math.l2_normalize(lenet(x_test[img6_0_idx]))
 encoding_6_1 = tf.math.l2_normalize(lenet(x_test[img6_1_idx]))
 
-
-x_9 = x_test[y_test == 9]
 encoding_9_0 = tf.math.l2_normalize(lenet(x_test[img9_0_idx]))
 encoding_9_1 = tf.math.l2_normalize(lenet(x_test[img9_1_idx]))
 
