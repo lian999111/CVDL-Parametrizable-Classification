@@ -17,8 +17,7 @@ class CenterLoss:
         centers_batch = tf.gather(self.centers, labels)
 
         # Compute loss
-        normalized_encodings = tf.math.l2_normalize(encodings)
-        delta = tf.subtract(centers_batch, normalized_encodings)    # difference between encodings and centers
+        delta = tf.subtract(centers_batch, encodings)    # difference between encodings and centers
         loss = tf.nn.l2_loss(delta)
 
         # Update centers
