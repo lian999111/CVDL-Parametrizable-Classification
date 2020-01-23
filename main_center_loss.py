@@ -169,6 +169,10 @@ for idx in range(0, 100):
     encoding = tf.math.l2_normalize(model(x[[idx],]))
     print('Intraclass: No.{}, id{} & id{}: {}'.format(test_num, anchor_idx, idx, tf.norm(encoding - encoding_anchor).numpy()))
 
+# %% Scatter plot 2D encodings
+plt.scatter(encodings[:, 0], encodings[:, 1], c=y_test)
+plt.show()
+
 # %% Save results for embedding projector
 import os
 import csv
