@@ -188,7 +188,7 @@ x_test = np.reshape(x_test, x_test.shape+(1,))
 encodings = lenet.predict(x_test)
 normalized_encodings = l2_normalize(encodings)
 
-dirname = os.path.dirname('log/centerloss')
+dirname = 'log/centerloss'
 if not os.path.exists(dirname):
     os.makedirs(dirname)
 with open(dirname+'/metadata.tsv', 'w') as metadata_file:
