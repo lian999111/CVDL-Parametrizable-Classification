@@ -33,7 +33,7 @@ model.summary()
 # %% Train the model with triplet loss
 train_triplet_loss.train_model_with_tripletloss(model, x_train, y_train,
                                               x_test, y_test, num_classes=10, len_encoding=64,
-                                              num_epochs=5, batch_size=64, learning_rate=0.0001,
+                                              num_epochs=10, batch_size=64, learning_rate=0.0001,
                                               margin=0.5,  triplet_loss_strategy="batch_hard")
 
 
