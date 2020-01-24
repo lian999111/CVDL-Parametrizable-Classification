@@ -171,7 +171,13 @@ for idx in range(0, 100):
     print('Intraclass: No.{}, id{} & id{}: {}'.format(test_num, anchor_idx, idx, tf.norm(encoding - encoding_anchor).numpy()))
 
 # %% Scatter plot 2D encodings
-plt.scatter(encodings[:, 0], encodings[:, 1], c=y_test, alpha=0.5)
+f = plt.figure(figsize=(16,9))
+c = ['#ff0000', '#ffff00', '#00ff00', '#00ffff', '#0000ff', 
+    '#ff00ff', '#990000', '#999900', '#009900', '#009999']
+for i in range(10):
+    plt.scatter(encodings[y_test==i, 0], encodings[y_test==i, 1], alpha=0.5, s=1)
+plt.legend(['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'])
+plt.grid()
 plt.show()
 
 # %% Save results for embedding projector
