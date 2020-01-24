@@ -7,7 +7,8 @@ class CenterLoss:
         self.alpha = alpha
         self.num_classes = num_classes
         self.len_encoding = len_encoding
-        self.centers = tf.Variable(np.zeros((num_classes, len_encoding), dtype=np.float32))
+        # Centers are not updated by gradient descent
+        self.centers = tf.Variable(np.zeros((num_classes, len_encoding), dtype=np.float32), trainable=True)
     
     @tf.function
     def __call__(self, labels, encodings):
@@ -17,8 +18,7 @@ class CenterLoss:
         centers_batch = tf.gather(self.centers, labels)
 
         # Compute loss
-        normalized_encodings = tf.math.l2_normalize(encodings)
-        delta = tf.subtract(centers_batch, normalized_encodings)    # difference between encodings and centers
+        delta = tf.subtract(centers_batch, encodings)    # difference between encodings and centers
         loss = tf.nn.l2_loss(delta)
 
         # Update centers
@@ -32,68 +32,98 @@ class CenterLoss:
 
         return loss, tf.identity(self.centers)
 
-@tf.function
-def train_one_step_centerloss(model, additional_layer,
+# @tf.function
+def train_one_step_centerloss(model, additional_layers,
                 x_batch_train, y_batch_train, 
                 scce_fn, center_loss_fn, ratio, optimizer, metric):
     with tf.GradientTape(persistent=False) as tape:
         encodings = model(x_batch_train)
-        logits = additional_layer(encodings)
+        
+        logits = tf.identity(encodings)
+        for layer in additional_layers:
+            logits = layer(logits)
+
         softmax_loss = scce_fn(y_batch_train, logits)
         center_loss, centers = center_loss_fn(y_batch_train, encodings)
         total_loss = softmax_loss + tf.math.scalar_mul(ratio, center_loss)
         metric.update_state(y_batch_train, tf.argmax(logits, 1))
 
-    grads = tape.gradient(total_loss, [additional_layer.trainable_variables, model.trainable_variables])
-    optimizer.apply_gradients(zip(grads[0], additional_layer.trainable_variables))
-    optimizer.apply_gradients(zip(grads[1], model.trainable_variables))
+    trainable_vars_of_parts = [layer.trainable_variables for layer in additional_layers]
+    trainable_vars_of_parts.append(model.trainable_variables)
+    grads_of_parts = tape.gradient(total_loss, trainable_vars_of_parts)
+    for grads, trainable_vars in zip(grads_of_parts, trainable_vars_of_parts):
+        optimizer.apply_gradients(zip(grads, trainable_vars))
 
     return softmax_loss, center_loss, total_loss, centers
 
+@tf.function
+def test_one_step_centerloss(model, additional_layers,
+                x_batch_test, y_batch_test, 
+                scce_fn, center_loss_fn, ratio, metric):
+    encodings = model(x_batch_test)
+    
+    logits = tf.identity(encodings)
+    for layer in additional_layers:
+        logits = layer(logits)
+    
+    softmax_loss = scce_fn(y_batch_test, logits)
+    center_loss, centers = center_loss_fn(y_batch_test, encodings)
+    total_loss = softmax_loss + tf.math.scalar_mul(ratio, center_loss)
+    metric.update_state(y_batch_test, tf.argmax(logits, 1))
+    
+    return softmax_loss, center_loss, total_loss
+
 def train_model_with_centerloss(model, train_data, train_labels,
-                test_data, test_labels, num_classes, len_encoding,
+                test_data, test_labels, num_classes, len_encoding, use_last_bias,
                 num_epochs=20, batch_size=128,
-                learning_rate=0.001, ratio=0.1):
+                learning_rate=0.001, alpha=0.2, ratio=0.1):
+    # Note: If use_last_bias = False, the last layer can only do linear classification with lines
+    # passing through origin, leaving the encodings to spread into a ring shape
 
     # Generate tf.data.Dataset
+    num_train_samples = train_data.shape[0]
+    num_test_samples = test_data.shape[0]
     train_dataset = tf.data.Dataset.from_tensor_slices((train_data, train_labels))
-    train_dataset = train_dataset.shuffle(buffer_size=1024).batch(batch_size)
+    train_dataset = train_dataset.batch(batch_size)
 
     # Additional layer for softmax loss (cross-entropy loss)
-    additional_layer = tf.keras.layers.Dense(num_classes)
-
-    optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
-    metric = tf.metrics.Accuracy()
+    additional_layers = [tf.keras.layers.PReLU(),
+                         tf.keras.layers.Dense(num_classes, use_bias=use_last_bias)]
 
     # Get loss function objects
     scce_fn = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
-    center_loss_fn = CenterLoss(0.2, num_classes, len_encoding)
+    center_loss_fn = CenterLoss(alpha, num_classes, len_encoding)
 
-    # Placeholder for total loss over an epoch
-    overall_total_loss = tf.Variable(0, dtype=tf.float32)
-    
+    # Create metric obj for averaging total loss over an epoch
+    train_loss = tf.keras.metrics.Mean('train_loss', dtype=tf.float32)
+    train_metric = tf.metrics.Accuracy('train_accuracy', dtype=tf.float32)
+    test_loss = tf.keras.metrics.Mean('test_loss', dtype=tf.float32)
+    test_metric = tf.metrics.Accuracy('test_accuracy', dtype=tf.float32)
+
+    optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
+
     # Train network
     for epoch in range(num_epochs):
         # Iterate over minibatches
-        metric.reset_states()
-        overall_total_loss.assign(0.0)
+        train_loss.reset_states()
+        train_metric.reset_states()
         for step, (x_batch_train, y_batch_train) in enumerate(train_dataset):
-            softmax_loss, center_loss, total_loss, centers = train_one_step_centerloss(model, additional_layer, 
+            softmax_loss, center_loss, total_loss, centers = train_one_step_centerloss(model, additional_layers, 
                                                                                        x_batch_train, y_batch_train, 
                                                                                        scce_fn, center_loss_fn, ratio, 
-                                                                                       optimizer, metric)
+                                                                                       optimizer, train_metric)
         
-            overall_total_loss.assign_add(softmax_loss + center_loss)
-        train_accuracy = metric.result()
-        print('Epoch: {}: Train Loss: {}, Train Accuracy: {}'.format(epoch, overall_total_loss.numpy(), train_accuracy))
+            train_loss(total_loss)
+        print('Epoch: {}: Train Loss: {}, Train Accuracy: {}'.format(epoch, train_loss.result(), train_metric.result()))
 
         # Model evaluation on test set for this epoch
-        metric.reset_states()
         test_dataset = tf.data.Dataset.from_tensor_slices((test_data, test_labels))
-        test_dataset = test_dataset.shuffle(buffer_size=1024).batch(batch_size)
+        test_dataset = test_dataset.batch(batch_size)
+        test_loss.reset_states()
+        test_metric.reset_states()
+
         for x_batch_test, y_batch_test in test_dataset:
-            encodings_test = model(x_batch_test)
-            logits = additional_layer(encodings_test)
-            metric.update_state(y_batch_test, tf.argmax(logits, 1))
-        test_accuracy = metric.result()
-        print('Epoch: {}: Test Accuracy: {}'.format(epoch, test_accuracy))
+            softmax_loss, center_loss, total_loss = test_one_step_centerloss(model, additional_layers, x_batch_test, y_batch_test, 
+                                                                             scce_fn, center_loss_fn, ratio, test_metric)
+            test_loss(total_loss)
+        print('Epoch: {}: Test Loss: {}, Test Accuracy: {}'.format(epoch, test_loss.result(), test_metric.result()))
