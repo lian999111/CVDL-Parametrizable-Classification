@@ -21,7 +21,7 @@ import matplotlib.pyplot as plt
 dataset_name = 'mnist'    # mnist or cifar10
 train_size = 60000
 test_size = 10000
-used_labels = list(range(0, 10))    # the labels to be loaded
+used_labels = list(range(0, 9))    # the labels to be loaded
 num_classes = len(used_labels)
 x_train, y_train, x_test, y_test, class_names = DLCVDatasets.get_dataset(dataset_name,
                                                                          used_labels=used_labels,
@@ -53,7 +53,7 @@ utils_center_loss.train_model_with_centerloss(model, x_train, y_train,
                                               x_test, y_test, num_classes, encoding_dim, use_last_bias,
                                               num_epochs, batch_size,
                                               learning_rate, alpha, ratio)
-model.save('model_lenet++.h5')
+model.save('model_lenet++_no_9.h5')
 
 # %% Evaluate the model
 # Load the complete dataset, including 0 - 9
