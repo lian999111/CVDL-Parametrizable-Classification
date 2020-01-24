@@ -32,30 +32,40 @@ class CenterLoss:
 
         return loss, tf.identity(self.centers)
 
-@tf.function
-def train_one_step_centerloss(model, additional_layer,
+# @tf.function
+def train_one_step_centerloss(model, additional_layers,
                 x_batch_train, y_batch_train, 
                 scce_fn, center_loss_fn, ratio, optimizer, metric):
     with tf.GradientTape(persistent=False) as tape:
         encodings = model(x_batch_train)
-        logits = additional_layer(encodings)
+        
+        logits = tf.identity(encodings)
+        for layer in additional_layers:
+            logits = layer(logits)
+
         softmax_loss = scce_fn(y_batch_train, logits)
         center_loss, centers = center_loss_fn(y_batch_train, encodings)
         total_loss = softmax_loss + tf.math.scalar_mul(ratio, center_loss)
         metric.update_state(y_batch_train, tf.argmax(logits, 1))
 
-    grads = tape.gradient(total_loss, [additional_layer.trainable_variables, model.trainable_variables])
-    optimizer.apply_gradients(zip(grads[0], additional_layer.trainable_variables))
-    optimizer.apply_gradients(zip(grads[1], model.trainable_variables))
+    trainable_vars_of_parts = [layer.trainable_variables for layer in additional_layers]
+    trainable_vars_of_parts.append(model.trainable_variables)
+    grads_of_parts = tape.gradient(total_loss, trainable_vars_of_parts)
+    for grads, trainable_vars in zip(grads_of_parts, trainable_vars_of_parts):
+        optimizer.apply_gradients(zip(grads, trainable_vars))
 
     return softmax_loss, center_loss, total_loss, centers
 
 @tf.function
-def test_one_step_centerloss(model, additional_layer,
+def test_one_step_centerloss(model, additional_layers,
                 x_batch_test, y_batch_test, 
                 scce_fn, center_loss_fn, ratio, metric):
     encodings = model(x_batch_test)
-    logits = additional_layer(encodings)
+    
+    logits = tf.identity(encodings)
+    for layer in additional_layers:
+        logits = layer(logits)
+    
     softmax_loss = scce_fn(y_batch_test, logits)
     center_loss, centers = center_loss_fn(y_batch_test, encodings)
     total_loss = softmax_loss + tf.math.scalar_mul(ratio, center_loss)
@@ -77,7 +87,8 @@ def train_model_with_centerloss(model, train_data, train_labels,
     train_dataset = train_dataset.batch(batch_size)
 
     # Additional layer for softmax loss (cross-entropy loss)
-    additional_layer = tf.keras.layers.Dense(num_classes, use_bias=use_last_bias)
+    additional_layers = [tf.keras.layers.PReLU(),
+                         tf.keras.layers.Dense(num_classes, use_bias=use_last_bias)]
 
     # Get loss function objects
     scce_fn = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
@@ -97,7 +108,7 @@ def train_model_with_centerloss(model, train_data, train_labels,
         train_loss.reset_states()
         train_metric.reset_states()
         for step, (x_batch_train, y_batch_train) in enumerate(train_dataset):
-            softmax_loss, center_loss, total_loss, centers = train_one_step_centerloss(model, additional_layer, 
+            softmax_loss, center_loss, total_loss, centers = train_one_step_centerloss(model, additional_layers, 
                                                                                        x_batch_train, y_batch_train, 
                                                                                        scce_fn, center_loss_fn, ratio, 
                                                                                        optimizer, train_metric)
@@ -112,7 +123,7 @@ def train_model_with_centerloss(model, train_data, train_labels,
         test_metric.reset_states()
 
         for x_batch_test, y_batch_test in test_dataset:
-            softmax_loss, center_loss, total_loss = test_one_step_centerloss(model, additional_layer, x_batch_test, y_batch_test, 
+            softmax_loss, center_loss, total_loss = test_one_step_centerloss(model, additional_layers, x_batch_test, y_batch_test, 
                                                                              scce_fn, center_loss_fn, ratio, test_metric)
             test_loss(total_loss)
-        print('Epoch: {}: Test Accuracy: {}'.format(epoch, test_metric.result()))
+        print('Epoch: {}: Test Loss: {}, Test Accuracy: {}'.format(epoch, test_loss.result(), test_metric.result()))
