@@ -46,9 +46,9 @@ model.summary()
 use_last_bias = False
 num_epochs = 40
 batch_size = 128
-learning_rate = 0.0005
+learning_rate = 0.001
 alpha = 0.5
-ratio = 1
+ratio = 0.01
 utils_center_loss.train_model_with_centerloss(model, x_train, y_train,
                                               x_test, y_test, num_classes, encoding_dim, use_last_bias,
                                               num_epochs, batch_size,
