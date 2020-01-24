@@ -38,13 +38,13 @@ input_shape = x_train.shape[1:]
 
 # %% Get the model
 encoding_dim = 2
-normalized_encodings = False
+normalized_encodings = True
 model = models.get_model_v3(input_shape, encoding_dim, normalized_encodings)
 model.summary()
 
 # %% Train the model with center loss
 use_last_bias = False
-num_epochs = 40
+num_epochs = 20
 batch_size = 128
 learning_rate = 0.001
 alpha = 0.5
@@ -171,11 +171,11 @@ for idx in range(0, 100):
     print('Intraclass: No.{}, id{} & id{}: {}'.format(test_num, anchor_idx, idx, tf.norm(encoding - encoding_anchor).numpy()))
 
 # %% Scatter plot 2D encodings
-f = plt.figure(figsize=(16,9))
+f = plt.figure(figsize=(8, 8))
 c = ['#ff0000', '#ffff00', '#00ff00', '#00ffff', '#0000ff', 
     '#ff00ff', '#990000', '#999900', '#009900', '#009999']
 for i in range(10):
-    plt.scatter(encodings[y_test==i, 0], encodings[y_test==i, 1], alpha=0.5, s=1)
+    plt.scatter(encodings[y_test==i, 0], encodings[y_test==i, 1], alpha=0.5, s=2)
 plt.legend(['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'])
 plt.grid()
 plt.show()
