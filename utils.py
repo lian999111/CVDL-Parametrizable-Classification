@@ -1,4 +1,5 @@
 import numpy as np 
+import matplotlib.pyplot as plt
 
 def cal_pairwise_dists(embeddings, squared=False):
     """Compute the 2D matrix of distances between all the embeddings.
@@ -56,3 +57,158 @@ def l2_normalize(embeddings, axis=1):
     mask = np.equal(norm, 0.0).astype(np.float64)
     norm = norm + mask * 1e-16      # avoid division-by-zero
     return embeddings / norm[:, np.newaxis]  # add newaxis for correct broadcasting
+
+
+def performance_test(pairwise_dists, labels, threshold):
+    """Calculate measures of performance.
+
+    Args:
+        pairwise_dists: square matrix with distances between embeddings
+        labels: labels or the embeddings
+        threshold: value below which two embeddings will be taken as equal
+
+    Returns:
+        recall: correctly positive classified pairs over all positive pairs
+        FAR: incorrectly positive classified pairs over all negative pairs
+        precision: correctly positive classified pairs over all positive classified pairs
+    """
+
+    # Check if labels[i] == labels[j]
+    # Uses broadcasting where the 1st argument has shape (1, batch_size) and the 2nd (batch_size, 1)
+    really_equal = np.equal(np.expand_dims(labels, 0), np.expand_dims(labels, 1))
+    # Check model prediction using given threshold
+    predicted_equal = pairwise_dists < threshold
+
+    number_positive_pairs = np.sum(really_equal)-len(labels)
+    number_negative_pairs = pairwise_dists.size - number_positive_pairs - len(labels)
+
+    # Calculate values of confusion matrix
+    TP = np.sum(predicted_equal[really_equal]) - len(labels)
+    FN = number_positive_pairs - TP
+    FP = np.sum(predicted_equal[~really_equal])
+    TN = number_negative_pairs - FP
+
+    # Calculate measures of performance
+    recall = TP / number_positive_pairs
+    FAR = FP / number_negative_pairs
+    precision = TP / (TP+FP)
+
+    return recall, FAR, precision
+
+def threshold_evaluation(pairwise_dists, labels, thr_start, thr_end, thr_quantity, i_want_to_plot = True):
+    """Calculate measures of performance.
+
+    Args:
+        pairwise_dists: square matrix with distances between embeddings
+        labels: labels or the embeddings
+        thr_start: first threshold to try
+        thr_end: last threshold to try
+        thr_quantity: number of thresholds to try
+        i_want_to_plot: set to true to plot ROC and precision-recall curve
+
+    Returns:
+        recall: array of correctly positive classified pairs over all positive pairs per threshold
+        FAR: array of incorrectly positive classified pairs over all negative pairs per threshold
+        precision: array of correctly positive classified pairs over all positive classified pairs per threshold
+    """
+    
+    # Define thresholds to be used
+    threshold_range = np.linspace(thr_start, thr_end, num=thr_quantity)
+
+    # Initialize variables
+    recall = np.zeros(len(threshold_range))
+    FAR = np.zeros(len(threshold_range))
+    precision = np.zeros(len(threshold_range))
+
+    # Get measures of performance and save them in array
+    for i, threshold in enumerate(threshold_range):
+        recall[i], FAR[i], precision[i] = performance_test(pairwise_dists, labels, threshold)
+
+    # plot measures of performance
+    if(i_want_to_plot):
+        plt.figure()
+
+        # ROC curve
+        plt.subplot(121)
+        plt.plot(FAR, recall,'ro',FAR, recall,'b')
+        plt.xlabel('FAR')
+        plt.ylabel('recall')
+        plt.title('ROC curve')
+        plt.grid(True)
+
+        # write value of threshold over each point
+        for i,(x,y) in enumerate(zip(FAR, recall)):
+
+            label = "{:.2f}".format(threshold_range[i])
+
+            plt.annotate(label, # this is the text
+                        (x,y), # this is the point to label
+                        textcoords="offset points", # how to position the text
+                        xytext=(0,10), # distance from text to points (x,y)
+                        ha='center') # horizontal alignment can be left, right or center
+            
+
+        # Precision-recall curve
+        plt.subplot(122)
+        plt.plot(recall, precision,'ro', recall, precision,'b')
+        plt.xlabel('recall')
+        plt.ylabel('precision')
+        plt.title('Precision-Recall Curve')
+        plt.grid(True)
+
+        # write value of threshold over each point
+        for i,(x,y) in enumerate(zip(recall, precision)):
+
+            label = "{:.2f}".format(threshold_range[i])
+
+            plt.annotate(label, # this is the text
+                        (x,y), # this is the point to label
+                        textcoords="offset points", # how to position the text
+                        xytext=(0,10), # distance from text to points (x,y)
+                        ha='center') # horizontal alignment can be left, right or center
+        
+        plt.show()
+    return recall, FAR, precision
+
+def get_accuracy_table(pairwise_dists, labels, threshold ):
+    """Calculate measures of performance.
+
+    Args:
+        pairwise_dists: square matrix with distances between embeddings
+        labels: labels or the embeddings
+        threshold: value below which two embeddings will be taken as equal
+
+    Returns:
+        accuracy_table: table with accuracy (correctly classified over total cases) per class
+    """
+
+    accuracy_table = np.zeros((10, 10))
+    start_row = 0
+    start_column_next = 0
+
+    for row_class in range(10):
+        row_span = len(np.argwhere(labels == row_class))
+        start_column = start_column_next
+        start_column_next = start_column_next + row_span
+
+        for column_class in range(row_class,10):
+            column_span = len(np.argwhere(labels == column_class))
+
+            if(row_class == column_class):
+                expected_value = 1
+            else:
+                expected_value = 0
+            
+            predicted_equal = pairwise_dists[start_row:start_row+row_span-1 , start_column:start_column+column_span-1] < threshold
+            
+            if(row_class == column_class):
+                accuracy = (np.sum(predicted_equal==expected_value)-row_span) / (predicted_equal.size-row_span)
+            else:
+                accuracy = (np.sum(predicted_equal==expected_value)) / predicted_equal.size
+            
+            accuracy_table[row_class,column_class] = accuracy
+            start_column = start_column + column_span
+        
+        start_row = start_row + row_span
+    
+    return accuracy_table
