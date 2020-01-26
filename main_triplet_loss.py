@@ -45,7 +45,7 @@ model = models.get_model_v1(input_shape, encoding_dim, normalized_encodings)
 model.summary()
 
 # %% Train the model with triplet lossnum_epochs = 20
-num_epochs=10
+num_epochs=5
 batch_size = 64
 learning_rate = 0.0001
 margin=0.5
@@ -162,3 +162,45 @@ print('9 & 9: {}'.format(tf.norm(encoding_9_0 - encoding_9_1).numpy()))
 print('5 & 9: {}'.format(tf.norm(encoding_5_0 - encoding_9_0).numpy()))
 print('6 & 9: {}'.format(tf.norm(encoding_6_0 - encoding_9_0).numpy()))
 
+# %% Performance test
+threshold = 0.7
+
+### Overall performance (temporal, can be calculated from table) ###
+# Check if labels[i] == labels[j]
+# Uses broadcasting where the 1st argument has shape (1, batch_size) and the 2nd (batch_size, 1)
+really_equal = np.equal(np.expand_dims(y_test, 0), np.expand_dims(y_test, 1))
+predicted_equal = pairwise_dists < threshold
+overall_accuracy = (np.sum(predicted_equal==really_equal)-len(y_test)) / (predicted_equal.size-len(y_test))
+
+### Accuracy per class
+accuracy_per_class = np.zeros((10, 10))
+start_row = 0
+start_column_next = 0
+
+for row_class in range(10):
+    row_span = len(np.argwhere(y_test == row_class))
+    start_column = start_column_next
+    start_column_next = start_column_next + row_span
+
+    for column_class in range(row_class,10):
+        column_span = len(np.argwhere(y_test == column_class))
+
+        if(row_class == column_class):
+            expected_value = 1
+        else:
+            expected_value = 0
+        
+        predicted_equal = pairwise_dists[start_row:start_row+row_span-1 , start_column:start_column+column_span-1] < threshold
+        
+        if(row_class == column_class):
+            accuracy = (np.sum(predicted_equal==expected_value)-row_span) / (predicted_equal.size-row_span)
+        else:
+            accuracy = (np.sum(predicted_equal==expected_value)) / predicted_equal.size
+        
+        accuracy_per_class[row_class,column_class] = accuracy
+        start_column = start_column + column_span
+    
+    start_row = start_row + row_span 
+
+
+# %%
