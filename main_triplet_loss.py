@@ -9,13 +9,15 @@ random.seed(seed_value)
 import numpy as np 
 np.random.seed(seed_value)
 import tensorflow as tf 
-tf.random.set_seed(seed_value)   
+tf.random.set_seed(seed_value) 
 
 import DLCVDatasets
 import models
 from utils import cal_pairwise_dists, l2_normalize
 import matplotlib.pyplot as plt
 import train_triplet_loss
+import os
+import csv
 
 # %% Load and preprocess data
 dataset_name = 'mnist'    # mnist or cifar10
@@ -45,8 +47,8 @@ model = models.get_model_v1(input_shape, encoding_dim, normalized_encodings)
 model.summary()
 
 # %% Train the model with triplet lossnum_epochs = 20
-num_epochs=10
-batch_size = 64
+num_epochs=5
+batch_size = 128
 learning_rate = 0.0001
 margin=0.5
 triplet_loss_strategy="batch_hard"
@@ -54,7 +56,7 @@ train_triplet_loss.train_model_with_tripletloss(model, x_train, y_train,
                                               x_test, y_test, num_classes, encoding_dim,
                                               num_epochs, batch_size, learning_rate,
                                               margin,  triplet_loss_strategy)
-#model.save('model_tl_lenet_1.h5')
+#model.save('model_trained_TL_lenet_1.h5')
 
 # %% Evaluate the model
 # Load the complete dataset, including 0 - 9
@@ -83,7 +85,24 @@ for idx in range(10):
 # Compute encodings and pairwise euclidean distances
 encodings = model.predict(x_test_normalized)
 normalized_encodings = l2_normalize(encodings)
+encoding_new = encodings.flatten(order='C')
+# plot3D(encoding_new,y_test)
 pairwise_dists = cal_pairwise_dists(normalized_encodings)
+
+#  Save results for embedding projector
+
+dirname = 'log/tripleLoss64'
+if not os.path.exists(dirname):
+    os.makedirs(dirname)
+with open(dirname+'/metadata.tsv', 'w') as metadata_file:
+    metadata_file.write('Index\tLabel\n')
+    for idx, row in enumerate(y_test):
+        metadata_file.write('%d\t%d\n' % (idx, row))
+
+with open(dirname+'/feature_vecs.tsv', 'w') as fw:
+    csv_writer = csv.writer(fw, delimiter='\t')
+    for vec in normalized_encodings:
+        csv_writer.writerow(vec)
 
 # %%
 img2_0_idx = digits_idc['2'][0]
@@ -162,3 +181,6 @@ print('9 & 9: {}'.format(tf.norm(encoding_9_0 - encoding_9_1).numpy()))
 print('5 & 9: {}'.format(tf.norm(encoding_5_0 - encoding_9_0).numpy()))
 print('6 & 9: {}'.format(tf.norm(encoding_6_0 - encoding_9_0).numpy()))
 
+
+
+# %%
