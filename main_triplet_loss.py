@@ -13,7 +13,7 @@ tf.random.set_seed(seed_value)
 
 import DLCVDatasets
 import models
-from utils import cal_pairwise_dists, l2_normalize
+import utils
 import matplotlib.pyplot as plt
 import train_triplet_loss
 import os
@@ -84,10 +84,10 @@ for idx in range(10):
 
 # Compute encodings and pairwise euclidean distances
 encodings = model.predict(x_test_normalized)
-normalized_encodings = l2_normalize(encodings)
+normalized_encodings = utils.l2_normalize(encodings)
 encoding_new = encodings.flatten(order='C')
 # plot3D(encoding_new,y_test)
-pairwise_dists = cal_pairwise_dists(normalized_encodings)
+pairwise_dists = utils.cal_pairwise_dists(normalized_encodings)
 
 # %% Save results for embedding projector
 
@@ -180,3 +180,11 @@ print('5 & 6: {}'.format(tf.norm(encoding_5_0 - encoding_6_0).numpy()))
 print('9 & 9: {}'.format(tf.norm(encoding_9_0 - encoding_9_1).numpy()))
 print('5 & 9: {}'.format(tf.norm(encoding_5_0 - encoding_9_0).numpy()))
 print('6 & 9: {}'.format(tf.norm(encoding_6_0 - encoding_9_0).numpy()))
+
+# %% Performance evaluation
+
+utils.threshold_evaluation(pairwise_dists, y_test, 0.1, 1.2, 12, i_want_to_plot = True)
+
+treshold = 0.75
+(recall, FAR, precision) = utils.performance_test(pairwise_dists, y_test, treshold)
+accuracy_table = utils.get_accuracy_table(pairwise_dists, y_test, treshold )
