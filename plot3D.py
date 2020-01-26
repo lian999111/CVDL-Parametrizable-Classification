@@ -3,6 +3,7 @@ import matplotlib as plt
 from mpl_toolkits.mplot3d import Axes3D
 import random 
 
+# takes embeddings as numpy array
 def plot3D(Embeddings,ylabels):
     fig = plt.pyplot.figure()
     ax = fig.add_subplot(111, projection='3d')
@@ -30,9 +31,9 @@ def Rand(start, end, num):
     return res 
   
 # Driver Code 
-num = 12
-start = 0
-end = 20
-test_vec = np.asarray(Rand(start, end, num)) 
-ylabels = np.asarray(Rand(0, 9, 4))
-plot3D(test_vec,ylabels)
+#num = 12
+#start = 0
+#end = 20
+#test_vec = np.asarray(Rand(start, end, num)) 
+#ylabels = np.asarray(Rand(0, 9, 4))
+#plot3D(test_vec,ylabels)

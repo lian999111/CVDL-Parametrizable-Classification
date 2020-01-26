@@ -43,7 +43,7 @@ def train_model_with_tripletloss(model, train_data, train_labels,
             overall_triplet_loss.assign_add(triplet_loss_value)
             #if(epoch==0):
             #    print('Step: {} Loss: {}'.format(step, triplet_loss_value))
-        print('Epoch: {}: Overall Train Loss: {} Last Batch Loss {}'.format(epoch, overall_triplet_loss.numpy(), triplet_loss_value))
+        print('Epoch: {}: Average Train Loss: {} Last Batch Loss {}'.format(epoch, overall_triplet_loss.numpy()/batch_size, triplet_loss_value))
 
         # Model evaluation on test set for this epoch
         test_dataset = tf.data.Dataset.from_tensor_slices((test_data, test_labels))
@@ -56,4 +56,4 @@ def train_model_with_tripletloss(model, train_data, train_labels,
             elif (triplet_loss_strategy=="batch_all"):
                 triplet_loss_value = triplet_loss.batch_all_triplet_loss(y_batch_test, embeddings, margin)
             overall_triplet_loss.assign_add(triplet_loss_value)
-        print('Epoch: {}:  Overall Test Loss: {} Last Batch Loss {}'.format(epoch, overall_triplet_loss.numpy(), triplet_loss_value))
+        print('Epoch: {}:  Average Test Loss: {} Last Batch Loss {}'.format(epoch, overall_triplet_loss.numpy()/batch_size, triplet_loss_value))
