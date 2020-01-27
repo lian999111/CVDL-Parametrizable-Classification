@@ -12,6 +12,7 @@ class CenterLoss:
     
     @tf.function
     def __call__(self, labels, encodings):
+        batch_size = labels.shape[0]
         labels = tf.reshape(labels, (-1,))   # to 1-D
 
         # Get the centers of each sample in this batch
@@ -19,7 +20,7 @@ class CenterLoss:
 
         # Compute loss
         delta = tf.subtract(centers_batch, encodings)    # difference between encodings and centers
-        loss = tf.nn.l2_loss(delta)
+        loss = tf.nn.l2_loss(delta) / batch_size
 
         # Update centers
         unique_labels, unique_idc, unique_counts = tf.unique_with_counts(labels)
