@@ -28,7 +28,6 @@ x_train, y_train, x_test, y_test, class_names = DLCVDatasets.get_dataset(dataset
                                                                          training_size=train_size,
                                                                          test_size=test_size)
 # Normalization
-mean = np.mean(x_train)
 x_train, x_test = x_train / 255.0, x_test / 255.0
 
 # Reshape to add the channel dimension
