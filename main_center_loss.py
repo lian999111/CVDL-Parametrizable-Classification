@@ -165,7 +165,7 @@ print('5 & 9: {}'.format(tf.norm(encoding_5_0 - encoding_9_0).numpy()))
 print('6 & 9: {}'.format(tf.norm(encoding_6_0 - encoding_9_0).numpy()))
 
 
-# %% Intraclass test
+# %% Intraclass/Interclass test
 anchor_num = 5
 anchor_idx = 0
 compare_num = 5
