@@ -53,7 +53,7 @@ utils_center_loss.train_model_with_centerloss(model, x_train, y_train,
                                               x_test, y_test, num_classes, encoding_dim, use_last_bias,
                                               num_epochs, batch_size,
                                               learning_rate, alpha, ratio)
-model.save('model_lenet++_no_9.h5')
+model.save('log/centerloss/model_lenet++_no_9.h5')
 
 # %% Evaluate the model
 # Load the complete dataset, including 0 - 9
