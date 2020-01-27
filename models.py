@@ -59,3 +59,16 @@ def get_model_v3(input_shape, encoding_dim=64, normalize_encoding=True):
         model.add(tf.keras.layers.Lambda(lambda x: tf.keras.backend.l2_normalize(x, axis=1), name='norm_encoding'))
     
     return model
+def get_model_v4(input_shape, encoding_dim=64, normalize_encoding=True):
+    model = tf.keras.Sequential([
+        tf.keras.layers.Conv2D(32, (3, 3), padding='same', activation='relu', input_shape=input_shape),
+        tf.keras.layers.MaxPool2D((2, 2)),
+        tf.keras.layers.Conv2D(64, (3, 3), padding='same', activation='relu'),
+        tf.keras.layers.MaxPool2D((2, 2)),
+        tf.keras.layers.Flatten(),
+        tf.keras.layers.Dense(encoding_dim, activation='linear', name='encoding')
+    ])
+    if normalize_encoding:
+        model.add(tf.keras.layers.Lambda(lambda x: tf.keras.backend.l2_normalize(x, axis=1), name='norm_encoding'))
+    
+    return model
