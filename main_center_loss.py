@@ -86,6 +86,7 @@ encodings = model.predict(x_test_normalized)
 # normalized_encodings = utils.l2_normalize(encodings)
 pairwise_dists = utils.cal_pairwise_dists(encodings)
 
+
 # %%
 img2_0_idx = digits_idc['2'][0]
 img2_1_idx = digits_idc['2'][20]
@@ -163,16 +164,18 @@ print('9 & 9: {}'.format(tf.norm(encoding_9_0 - encoding_9_1).numpy()))
 print('5 & 9: {}'.format(tf.norm(encoding_5_0 - encoding_9_0).numpy()))
 print('6 & 9: {}'.format(tf.norm(encoding_6_0 - encoding_9_0).numpy()))
 
+
 # %% Intraclass test
-anchor_num = 9
+anchor_num = 5
 anchor_idx = 0
-compare_num = 4
+compare_num = 5
 x_anchor = x_test_normalized[y_test == anchor_num]
 x_compare = x_test_normalized[y_test == compare_num]
 encoding_anchor = model(x_anchor[[anchor_idx],])
 for idx in range(0, 100):
     encoding = model(x_compare[[idx],])
     print('Intraclass: No.{}, id{} & No. {}, id{}: {}'.format(anchor_num, anchor_idx, compare_num, idx, tf.norm(encoding - encoding_anchor).numpy()))
+
 
 # %% Scatter plot 2D encodings
 f = plt.figure(figsize=(8, 8))
@@ -184,10 +187,20 @@ plt.legend(['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'])
 plt.grid()
 plt.show()
 
+
+# %% Performance evaluation
+utils.threshold_evaluation(pairwise_dists, y_test, 0.1, 1.2, 12, i_want_to_plot = True)
+
+treshold = 0.75
+(recall, FAR, precision) = utils.performance_test(pairwise_dists, y_test, treshold)
+accuracy_table = utils.get_accuracy_table(pairwise_dists, y_test, treshold)
+
+
 # %% Save results for embedding projector
 import os
 import csv
 
+# ATTENTION: Data have to be reload to match the sequence of sprite image
 used_labels = list(range(0, 10))    # the labels to be loaded
 x_train, y_train, x_test, y_test, class_names = DLCVDatasets.get_dataset(dataset_name,
                                                                          used_labels=used_labels,
@@ -201,7 +214,7 @@ x_train, x_test = x_train / 255.0, x_test / 255.0
 x_train = np.reshape(x_train, x_train.shape+(1,))
 x_test = np.reshape(x_test, x_test.shape+(1,))
 
-# Compute encodings and pairwise euclidean distances
+# Compute encodings
 encodings = model.predict(x_test)
 
 dirname = 'log/centerloss'
@@ -217,10 +230,4 @@ with open(dirname+'/feature_vecs.tsv', 'w') as fw:
     for vec in encodings:
         csv_writer.writerow(vec)
 
-# %% Performance evaluation
-
-utils.threshold_evaluation(pairwise_dists, y_test, 0.1, 1.2, 12, i_want_to_plot = True)
-
-treshold = 0.75
-(recall, FAR, precision) = utils.performance_test(pairwise_dists, y_test, treshold)
-accuracy_table = utils.get_accuracy_table(pairwise_dists, y_test, treshold )
+# %%
