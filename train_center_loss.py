@@ -8,7 +8,7 @@ class CenterLoss:
         self.num_classes = num_classes
         self.len_encoding = len_encoding
         # Centers are not updated by gradient descent
-        self.centers = tf.Variable(np.zeros((num_classes, len_encoding), dtype=np.float32), trainable=True)
+        self.centers = tf.Variable(np.zeros((num_classes, len_encoding), dtype=np.float32), trainable=False)
     
     @tf.function
     def __call__(self, labels, encodings):

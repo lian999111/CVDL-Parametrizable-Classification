@@ -13,8 +13,8 @@ tf.random.set_seed(seed_value)
 
 import DLCVDatasets
 import models
-import utils_center_loss
-from utils import cal_pairwise_dists, l2_normalize
+import train_center_loss
+import utils
 import matplotlib.pyplot as plt
 
 # %% Load and preprocess data
@@ -38,8 +38,8 @@ input_shape = x_train.shape[1:]
 
 # %% Get the model
 encoding_dim = 2
-normalized_encodings = True
-model = models.get_model_v3(input_shape, encoding_dim, normalized_encodings)
+normalized_encodings = False
+model = models.get_model_v4(input_shape, encoding_dim, normalized_encodings)
 model.summary()
 
 # %% Train the model with center loss
@@ -48,8 +48,8 @@ num_epochs = 20
 batch_size = 128
 learning_rate = 0.001
 alpha = 0.5
-ratio = 0.1
-utils_center_loss.train_model_with_centerloss(model, x_train, y_train,
+ratio = 1
+train_center_loss.train_model_with_centerloss(model, x_train, y_train,
                                               x_test, y_test, num_classes, encoding_dim, use_last_bias,
                                               num_epochs, batch_size,
                                               learning_rate, alpha, ratio)
@@ -81,8 +81,8 @@ for idx in range(10):
 
 # Compute encodings and pairwise euclidean distances
 encodings = model.predict(x_test_normalized)
-normalized_encodings = l2_normalize(encodings)
-pairwise_dists = cal_pairwise_dists(normalized_encodings)
+normalized_encodings = utils.l2_normalize(encodings)
+pairwise_dists = utils.cal_pairwise_dists(normalized_encodings)
 
 # %%
 img2_0_idx = digits_idc['2'][0]
@@ -199,8 +199,7 @@ x_test = np.reshape(x_test, x_test.shape+(1,))
 
 # Compute encodings and pairwise euclidean distances
 encodings = model.predict(x_test)
-normalized_encodings = l2_normalize(encodings)
-normalized_encodings = encodings
+normalized_encodings = utils.l2_normalize(encodings)
 
 dirname = 'log/centerloss'
 if not os.path.exists(dirname):
@@ -215,4 +214,10 @@ with open(dirname+'/feature_vecs.tsv', 'w') as fw:
     for vec in normalized_encodings:
         csv_writer.writerow(vec)
 
-# %%
+# %% Performance evaluation
+
+utils.threshold_evaluation(pairwise_dists, y_test, 0.1, 1.2, 12, i_want_to_plot = True)
+
+treshold = 0.75
+(recall, FAR, precision) = utils.performance_test(pairwise_dists, y_test, treshold)
+accuracy_table = utils.get_accuracy_table(pairwise_dists, y_test, treshold )
