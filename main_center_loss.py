@@ -83,8 +83,8 @@ for idx in range(10):
 
 # Compute encodings and pairwise euclidean distances
 encodings = model.predict(x_test_normalized)
-normalized_encodings = utils.l2_normalize(encodings)
-pairwise_dists = utils.cal_pairwise_dists(normalized_encodings)
+# normalized_encodings = utils.l2_normalize(encodings)
+pairwise_dists = utils.cal_pairwise_dists(encodings)
 
 # %%
 img2_0_idx = digits_idc['2'][0]
@@ -96,17 +96,17 @@ img6_1_idx = digits_idc['6'][20]
 img9_0_idx = digits_idc['9'][0]
 img9_1_idx = digits_idc['9'][20]
 
-encoding_2_0 = normalized_encodings[img2_0_idx]
-encoding_2_1 = normalized_encodings[img2_1_idx]
+encoding_2_0 = encodings[img2_0_idx]
+encoding_2_1 = encodings[img2_1_idx]
 
-encoding_5_0 = normalized_encodings[img5_0_idx]
-encoding_5_1 = normalized_encodings[img5_1_idx]
+encoding_5_0 = encodings[img5_0_idx]
+encoding_5_1 = encodings[img5_1_idx]
 
-encoding_6_0 = normalized_encodings[img6_0_idx]
-encoding_6_1 = normalized_encodings[img6_1_idx]
+encoding_6_0 = encodings[img6_0_idx]
+encoding_6_1 = encodings[img6_1_idx]
 
-encoding_9_0 = normalized_encodings[img9_0_idx]
-encoding_9_1 = normalized_encodings[img9_1_idx]
+encoding_9_0 = encodings[img9_0_idx]
+encoding_9_1 = encodings[img9_1_idx]
 
 # Visualization
 plt.figure(1)
@@ -164,13 +164,15 @@ print('5 & 9: {}'.format(tf.norm(encoding_5_0 - encoding_9_0).numpy()))
 print('6 & 9: {}'.format(tf.norm(encoding_6_0 - encoding_9_0).numpy()))
 
 # %% Intraclass test
-test_num = 2
+anchor_num = 9
 anchor_idx = 0
-x = x_test[y_test == test_num]
-encoding_anchor = tf.math.l2_normalize(model(x[[anchor_idx],]))
+compare_num = 4
+x_anchor = x_test_normalized[y_test == anchor_num]
+x_compare = x_test_normalized[y_test == compare_num]
+encoding_anchor = model(x_anchor[[anchor_idx],])
 for idx in range(0, 100):
-    encoding = tf.math.l2_normalize(model(x[[idx],]))
-    print('Intraclass: No.{}, id{} & id{}: {}'.format(test_num, anchor_idx, idx, tf.norm(encoding - encoding_anchor).numpy()))
+    encoding = model(x_compare[[idx],])
+    print('Intraclass: No.{}, id{} & No. {}, id{}: {}'.format(anchor_num, anchor_idx, compare_num, idx, tf.norm(encoding - encoding_anchor).numpy()))
 
 # %% Scatter plot 2D encodings
 f = plt.figure(figsize=(8, 8))
@@ -201,7 +203,6 @@ x_test = np.reshape(x_test, x_test.shape+(1,))
 
 # Compute encodings and pairwise euclidean distances
 encodings = model.predict(x_test)
-normalized_encodings = utils.l2_normalize(encodings)
 
 dirname = 'log/centerloss'
 if not os.path.exists(dirname):
@@ -213,7 +214,7 @@ with open(dirname+'/metadata.tsv', 'w') as metadata_file:
 
 with open(dirname+'/feature_vecs.tsv', 'w') as fw:
     csv_writer = csv.writer(fw, delimiter='\t')
-    for vec in normalized_encodings:
+    for vec in encodings:
         csv_writer.writerow(vec)
 
 # %% Performance evaluation
