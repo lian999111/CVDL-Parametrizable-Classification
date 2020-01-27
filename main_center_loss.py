@@ -36,6 +36,9 @@ x_train = np.reshape(x_train, x_train.shape+(1,))
 x_test = np.reshape(x_test, x_test.shape+(1,))
 input_shape = x_train.shape[1:]
 
+# %% Load the model
+model = tf.keras.models.load_model('log/centerloss/model_v3.h5')
+
 # %% Get the model
 encoding_dim = 2
 normalized_encodings = False
