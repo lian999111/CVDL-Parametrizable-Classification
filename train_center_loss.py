@@ -8,10 +8,11 @@ class CenterLoss:
         self.num_classes = num_classes
         self.len_encoding = len_encoding
         # Centers are not updated by gradient descent
-        self.centers = tf.Variable(np.zeros((num_classes, len_encoding), dtype=np.float32), trainable=True)
+        self.centers = tf.Variable(np.zeros((num_classes, len_encoding), dtype=np.float32), trainable=False)
     
     @tf.function
     def __call__(self, labels, encodings):
+        batch_size = labels.shape[0]
         labels = tf.reshape(labels, (-1,))   # to 1-D
 
         # Get the centers of each sample in this batch
@@ -19,7 +20,7 @@ class CenterLoss:
 
         # Compute loss
         delta = tf.subtract(centers_batch, encodings)    # difference between encodings and centers
-        loss = tf.nn.l2_loss(delta)
+        loss = tf.nn.l2_loss(delta) / batch_size
 
         # Update centers
         unique_labels, unique_idc, unique_counts = tf.unique_with_counts(labels)
@@ -32,7 +33,7 @@ class CenterLoss:
 
         return loss, tf.identity(self.centers)
 
-# @tf.function
+@tf.function
 def train_one_step_centerloss(model, additional_layers,
                 x_batch_train, y_batch_train, 
                 scce_fn, center_loss_fn, ratio, optimizer, metric):
@@ -87,8 +88,11 @@ def train_model_with_centerloss(model, train_data, train_labels,
     train_dataset = train_dataset.batch(batch_size)
 
     # Additional layer for softmax loss (cross-entropy loss)
-    additional_layers = [tf.keras.layers.PReLU(),
-                         tf.keras.layers.Dense(num_classes, use_bias=use_last_bias)]
+    additional_layers = [tf.keras.layers.Dense(num_classes, use_bias=use_last_bias)]
+    # additional_layers = [tf.keras.layers.ReLU(),
+    #                      tf.keras.layers.Dense(num_classes, use_bias=use_last_bias)]
+    # additional_layers = [tf.keras.layers.PReLU(),
+    #                      tf.keras.layers.Dense(num_classes, use_bias=use_last_bias)]
 
     # Get loss function objects
     scce_fn = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
