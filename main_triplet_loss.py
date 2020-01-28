@@ -23,7 +23,7 @@ import csv
 dataset_name = 'mnist'    # mnist or cifar10
 train_size = 60000
 test_size = 10000
-used_labels = list(range(0, 9))    # the labels to be loaded
+used_labels = [0,1,2,3,4,6,7,8,9]    # the labels to be loaded
 num_classes = len(used_labels)
 x_train, y_train, x_test, y_test, class_names = DLCVDatasets.get_dataset(dataset_name,
                                                                          used_labels=used_labels,
@@ -42,14 +42,14 @@ input_shape = x_train.shape[1:]
 
 # %% Get the model
 encoding_dim = 64
-normalized_encodings = True
-model = models.get_model_v1(input_shape, encoding_dim, normalized_encodings)
+normalized_encodings = False
+model = models.get_model_v4(input_shape, encoding_dim, normalized_encodings)
 model.summary()
 
 # %% Train the model with triplet lossnum_epochs = 20
-num_epochs=5
-batch_size = 128
-learning_rate = 0.0001
+num_epochs=6
+batch_size = 64
+learning_rate = 0.0005
 margin=0.5
 triplet_loss_strategy="batch_hard"
 train_triplet_loss.train_model_with_tripletloss(model, x_train, y_train,
@@ -84,10 +84,11 @@ for idx in range(10):
 
 # Compute encodings and pairwise euclidean distances
 encodings = model.predict(x_test_normalized)
-normalized_encodings = utils.l2_normalize(encodings)
+#normalized_encodings = utils.l2_normalize(encodings)
 encoding_new = encodings.flatten(order='C')
 # plot3D(encoding_new,y_test)
-pairwise_dists = utils.cal_pairwise_dists(normalized_encodings)
+#pairwise_dists = utils.cal_pairwise_dists(normalized_encodings)
+pairwise_dists = utils.cal_pairwise_dists(encodings)
 
 # %% Save results for embedding projector
 
@@ -101,7 +102,7 @@ with open(dirname+'/metadata.tsv', 'w') as metadata_file:
 
 with open(dirname+'/feature_vecs.tsv', 'w') as fw:
     csv_writer = csv.writer(fw, delimiter='\t')
-    for vec in normalized_encodings:
+    for vec in encodings:
         csv_writer.writerow(vec)
 
 # %%
@@ -114,17 +115,17 @@ img6_1_idx = digits_idc['6'][20]
 img9_0_idx = digits_idc['9'][0]
 img9_1_idx = digits_idc['9'][20]
 
-encoding_2_0 = normalized_encodings[img2_0_idx]
-encoding_2_1 = normalized_encodings[img2_1_idx]
+encoding_2_0 = encodings[img2_0_idx]
+encoding_2_1 = encodings[img2_1_idx]
 
-encoding_5_0 = normalized_encodings[img5_0_idx]
-encoding_5_1 = normalized_encodings[img5_1_idx]
+encoding_5_0 = encodings[img5_0_idx]
+encoding_5_1 = encodings[img5_1_idx]
 
-encoding_6_0 = normalized_encodings[img6_0_idx]
-encoding_6_1 = normalized_encodings[img6_1_idx]
+encoding_6_0 = encodings[img6_0_idx]
+encoding_6_1 = encodings[img6_1_idx]
 
-encoding_9_0 = normalized_encodings[img9_0_idx]
-encoding_9_1 = normalized_encodings[img9_1_idx]
+encoding_9_0 = encodings[img9_0_idx]
+encoding_9_1 = encodings[img9_1_idx]
 
 # Visualization
 plt.figure(1)
