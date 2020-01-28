@@ -91,7 +91,10 @@ def performance_test(pairwise_dists, labels, threshold):
     # Calculate measures of performance
     recall = TP / number_positive_pairs
     FAR = FP / number_negative_pairs
-    precision = TP / (TP+FP)
+    if TP != 0:
+        precision = TP / (TP+FP)
+    else:
+        precision = 0   # happens when the model is too poor
 
     return recall, FAR, precision
 
