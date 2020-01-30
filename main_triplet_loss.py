@@ -23,7 +23,7 @@ import csv
 dataset_name = 'mnist'    # mnist or cifar10
 train_size = 60000
 test_size = 10000
-used_labels = [0,1,2,3,4,6,7,8,9]    # the labels to be loaded
+used_labels = [0,1,2,3,4,5,6,7,8,9]    # the labels to be loaded
 num_classes = len(used_labels)
 x_train, y_train, x_test, y_test, class_names = DLCVDatasets.get_dataset(dataset_name,
                                                                          used_labels=used_labels,
