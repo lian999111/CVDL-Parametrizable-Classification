@@ -29,7 +29,15 @@ test_imgs = test_imgs / 255.0
 # %% Compare test images
 encodings = model.predict(test_imgs)
 pairwise_dists = utils.cal_pairwise_dists(encodings)
-classification = pairwise_dists < 0.6
+classification = pairwise_dists < 0.8
 
+
+# %%
+import openpyxl
+wb = openpyxl.load_workbook(filename='test_imgs/test_img_template.xlsx')
+ws = wb.worksheets[0]
+for (i, j), value in np.ndenumerate(classification):
+     ws.cell(row=i+2, column=j+2).value = value
+wb.save('log/centerloss/model_v4_64_small.xlsx')
 
 # %%
