@@ -191,12 +191,25 @@ plt.show()
 # %% Performance evaluation
 utils.threshold_evaluation(pairwise_dists, y_test, 0.1, 1.2, 12, i_want_to_plot = True)
 
-treshold = 0.75
+treshold = 0.5
 (recall, FAR, precision) = utils.performance_test(pairwise_dists, y_test, treshold)
 accuracy_table = utils.get_accuracy_table(pairwise_dists, y_test, treshold)
 
 
-# %% Save results for embedding projector
+# %% save accuracy table in Excell
+import openpyxl
+wb =  openpyxl.Workbook()
+ws =  wb.active
+for i in range(10):
+    ws.cell(row=i+2, column=1).value = i
+    ws.cell(row=1, column=i+2).value = i
+
+for (i, j), value in np.ndenumerate(accuracy_table):
+     ws.cell(row=i+2, column=j+2).value = value
+wb.save('log/centerloss/accuracy_no9.xlsx')
+
+
+1# %% Save results for embedding projector
 import os
 import csv
 
