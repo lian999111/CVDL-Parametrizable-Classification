@@ -39,6 +39,6 @@ wb = openpyxl.load_workbook(filename='test_imgs/test_img_template.xlsx')
 ws = wb.worksheets[0]
 for (i, j), value in np.ndenumerate(classification):
      ws.cell(row=i+2, column=j+2).value = value
-wb.save('log/centerloss/accuracy_model_v4_64.xlsx')
+wb.save('log/centerloss/model_v4_64.xlsx')
 
 # %%
