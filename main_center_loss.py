@@ -202,7 +202,7 @@ treshold = 0.5
 accuracy_table = utils.get_accuracy_table(pairwise_dists, y_test, treshold)
 
 
-# %% save accuracy table in Excell
+# %% save accuracy table in Excel
 import openpyxl
 wb =  openpyxl.Workbook()
 ws =  wb.active
@@ -212,7 +212,7 @@ for i in range(10):
 
 for (i, j), value in np.ndenumerate(accuracy_table):
      ws.cell(row=i+2, column=j+2).value = value
-wb.save('log/centerloss/accuracy_no9.xlsx')
+wb.save('log/centerloss/accuracy_all.xlsx')
 
 
 # %% Save results for embedding projector
