@@ -9,7 +9,7 @@ import utils
 
 
 # %% Load model
-model = k.models.load_model('log/centerloss/model_v4_no_5.h5')
+model = k.models.load_model('log/centerloss/model_v4_64.h5')
 
 
 # %% Load images
@@ -27,9 +27,10 @@ test_imgs = test_imgs / 255.0
 
 
 # %% Compare test images
+threshold = 0.5
 encodings = model.predict(test_imgs)
 pairwise_dists = utils.cal_pairwise_dists(encodings)
-classification = pairwise_dists < 0.8
+classification = pairwise_dists < threshold
 
 
 # %%
@@ -38,6 +39,6 @@ wb = openpyxl.load_workbook(filename='test_imgs/test_img_template.xlsx')
 ws = wb.worksheets[0]
 for (i, j), value in np.ndenumerate(classification):
      ws.cell(row=i+2, column=j+2).value = value
-wb.save('log/centerloss/model_v4_64_small.xlsx')
+wb.save('log/centerloss/accuracy_model_v4_64.xlsx')
 
 # %%
