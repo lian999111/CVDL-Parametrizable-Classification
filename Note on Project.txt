@@ -1,3 +1,0 @@
-1. distance of 2 encodings or combine the 2 streams then classify?
-2. test on omniglot dataset
-3. change the ratio of train and test dataset
