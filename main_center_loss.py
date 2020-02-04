@@ -17,11 +17,13 @@ import train_center_loss
 import utils
 import matplotlib.pyplot as plt
 
+
 # %% Load and preprocess data
 dataset_name = 'mnist'    # mnist or cifar10
 train_size = 60000
 test_size = 10000
-used_labels = list(range(0, 9))    # the labels to be loaded
+used_labels = list(range(0, 10))    # the labels to be loaded
+# used_labels.remove(9)
 num_classes = len(used_labels)
 x_train, y_train, x_test, y_test, class_names = DLCVDatasets.get_dataset(dataset_name,
                                                                          used_labels=used_labels,
@@ -35,27 +37,31 @@ x_train = np.reshape(x_train, x_train.shape+(1,))
 x_test = np.reshape(x_test, x_test.shape+(1,))
 input_shape = x_train.shape[1:]
 
+
 # %% Load the model
-model = tf.keras.models.load_model('log/centerloss/model_v3.h5')
+model = tf.keras.models.load_model('log/centerloss/model_v4_64.h5')
+
 
 # %% Get the model
-encoding_dim = 2
+encoding_dim = 64
 normalized_encodings = False
 model = models.get_model_v4(input_shape, encoding_dim, normalized_encodings)
 model.summary()
 
+
 # %% Train the model with center loss
 use_last_bias = False
-num_epochs = 20
+num_epochs = 15
 batch_size = 128
 learning_rate = 0.001
 alpha = 0.5
-ratio = 1
+ratio = 1   # the lambda to balance cross-entropy and centerloss
 train_center_loss.train_model_with_centerloss(model, x_train, y_train,
                                               x_test, y_test, num_classes, encoding_dim, use_last_bias,
                                               num_epochs, batch_size,
                                               learning_rate, alpha, ratio)
-model.save('log/centerloss/model_lenet++_no_9.h5')
+# model.save('log/centerloss/model_v4_64.h5')
+
 
 # %% Evaluate the model
 # Load the complete dataset, including 0 - 9
@@ -166,9 +172,9 @@ print('6 & 9: {}'.format(tf.norm(encoding_6_0 - encoding_9_0).numpy()))
 
 
 # %% Intraclass/Interclass test
-anchor_num = 5
+anchor_num = 0
 anchor_idx = 0
-compare_num = 5
+compare_num = 6
 x_anchor = x_test_normalized[y_test == anchor_num]
 x_compare = x_test_normalized[y_test == compare_num]
 encoding_anchor = model(x_anchor[[anchor_idx],])
@@ -209,7 +215,7 @@ for (i, j), value in np.ndenumerate(accuracy_table):
 wb.save('log/centerloss/accuracy_no9.xlsx')
 
 
-1# %% Save results for embedding projector
+# %% Save results for embedding projector
 import os
 import csv
 
