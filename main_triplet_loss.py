@@ -23,7 +23,7 @@ import csv
 dataset_name = 'mnist'    # mnist or cifar10
 train_size = 60000
 test_size = 10000
-used_labels = [0,1,2,3,4,5,6,7,8,9]    # the labels to be loaded
+used_labels = [0,1,2,3,4,5,6,7,8]    # the labels to be loaded
 num_classes = len(used_labels)
 x_train, y_train, x_test, y_test, class_names = DLCVDatasets.get_dataset(dataset_name,
                                                                          used_labels=used_labels,
@@ -46,7 +46,7 @@ normalized_encodings = False
 model = models.get_model_v4(input_shape, encoding_dim, normalized_encodings)
 model.summary()
 
-# %% Train the model with triplet lossnum_epochs = 20
+# %% Train the model with triplet loss
 num_epochs=6
 batch_size = 64
 learning_rate = 0.0005
@@ -92,7 +92,7 @@ pairwise_dists = utils.cal_pairwise_dists(encodings)
 
 # %% Save results for embedding projector
 
-dirname = 'log/tripleLoss64'
+dirname = 'log/tripleLoss_all'
 if not os.path.exists(dirname):
     os.makedirs(dirname)
 with open(dirname+'/metadata.tsv', 'w') as metadata_file:
@@ -184,8 +184,22 @@ print('6 & 9: {}'.format(tf.norm(encoding_6_0 - encoding_9_0).numpy()))
 
 # %% Performance evaluation
 
-utils.threshold_evaluation(pairwise_dists, y_test, 0.1, 1.2, 12, i_want_to_plot = True)
+utils.threshold_evaluation(pairwise_dists, y_test, 2.5, 3.5, 11, i_want_to_plot = True)
 
-treshold = 0.75
+treshold = 2.7
 (recall, FAR, precision) = utils.performance_test(pairwise_dists, y_test, treshold)
 accuracy_table = utils.get_accuracy_table(pairwise_dists, y_test, treshold )
+
+# %% save accuracy table in Excell
+import openpyxl
+wb =  openpyxl.Workbook()
+ws =  wb.active
+for i in range(10):
+    ws.cell(row=i+2, column=1).value = i
+    ws.cell(row=1, column=i+2).value = i
+
+for (i, j), value in np.ndenumerate(accuracy_table):
+     ws.cell(row=i+2, column=j+2).value = value
+wb.save('log/tripletloss/accuracy_without_9.xlsx')
+
+# %%
