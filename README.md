@@ -3,7 +3,7 @@ The aim of this project is to study parameterizble classifier using the concept 
 Performance of different losses are tested, including triplet loss and center loss.
 
 # How to use
-This project exploits 2 methods, triplet loss and center loss, to train a siamese network that learns to identify the similarity between 2 images. The project is written using **Tensorflow v2.0**. We recommend to run the codes in **Interactive Window** in Visual Code as we write the them in a cell-by-cell fashion.
+This project exploits 2 methods, triplet loss and center loss, to train a siamese network that learns to identify the similarity between 2 images. The project is written using **Tensorflow v2.0**. We recommend to run the codes in the **Interactive Window** in Visual Code as the codes are written in a cell-by-cell fashion.
 
 The repository is organized in such a way:
 1. The main training, including data pre-processing, and analysis of both methods are done in **main_triplet_loss.py** and **main_center_loss.py**
